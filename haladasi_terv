@@ -21,9 +21,9 @@ backend/src/routes/employeesRoutes.js
   [x] DELETE /api/employees/:id - törlés
 
 backend/src/routes/bookingsRoutes.js
-  [ ] GET /api/bookings - foglalások lekérése (JOIN: user, service, employee)
-  [ ] POST /api/bookings - új foglalás létrehozása (ütközés-ellenőrzéssel)
-  [ ] DELETE /api/bookings/:id - törlés
+  [x] GET /api/bookings - foglalások lekérése (JOIN: user, service, employee)
+  [x] POST /api/bookings - új foglalás létrehozása (ütközés-ellenőrzéssel)
+  [x] DELETE /api/bookings/:id - törlés
 
 backend/src/server.js
   [x] Új route-ok importálása és regisztrálása
@@ -80,7 +80,7 @@ frontend/src/pages/admin/EmployeesPage.jsx
   [x] Új dolgozó hozzáadás modálból
 
 frontend/src/pages/admin/BookingsPage.jsx
-  [ ] Foglalások listázása (JOIN-nal)
+  [x] Foglalások listázása (JOIN-nal)
   [ ] Foglalás törlése
   [ ] Status oszlop (pending / confirmed / cancelled)
 
