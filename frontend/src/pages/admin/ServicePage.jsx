@@ -161,34 +161,66 @@ export default function ServicePage() {
                     {services.map((s) => (
                         <tr key={s.id}>
                             <td>{s.id}</td>
-                            <td>{s.name}</td>
+                            <td>
+                                <input
+                                    type="text"
+                                    value={s.name}
+                                    className="form-control"
+                                    style={{ width: "150px" }}
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        const updated = { ...s, name: value };
+                                        setServices((prev) =>
+                                            prev.map((srv) => (srv.id === s.id ? updated : srv))
+                                        );
+                                        if (value.trim() !== "") {
+                                            handleUpdate(s.id, updated);
+                                        }
+                                    }}
+                                />
+                            </td>
+
                             <td>
                                 <input
                                     type="number"
-                                    value={s.duration_minutes}
+                                    value={s.duration_minutes ?? ""}
                                     className="form-control"
                                     style={{ width: "90px" }}
-                                    onChange={(e) =>
-                                        handleUpdate(s.id, {
-                                            ...s,
-                                            duration_minutes: parseInt(e.target.value),
-                                        })
-                                    }
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        // ha üres, csak a state-ben frissítjük lokálisan
+                                        if (value === "") {
+                                            const updated = services.map((srv) =>
+                                                srv.id === s.id ? { ...srv, duration_minutes: "" } : srv
+                                            );
+                                            setServices(updated);
+                                            return;
+                                        }
+                                        // ha nem üres, frissítjük a backendben is
+                                        handleUpdate(s.id, { ...s, duration_minutes: parseInt(value) });
+                                    }}
                                 />
+
                             </td>
                             <td>
                                 <input
                                     type="number"
-                                    value={s.price_cents}
+                                    value={s.price_cents ?? ""}
                                     className="form-control"
                                     style={{ width: "100px" }}
-                                    onChange={(e) =>
-                                        handleUpdate(s.id, {
-                                            ...s,
-                                            price_cents: parseInt(e.target.value),
-                                        })
-                                    }
+                                    onChange={(e) => {
+                                        const value = e.target.value;
+                                        if (value === "") {
+                                            const updated = services.map((srv) =>
+                                                srv.id === s.id ? { ...srv, price_cents: "" } : srv
+                                            );
+                                            setServices(updated);
+                                            return;
+                                        }
+                                        handleUpdate(s.id, { ...s, price_cents: parseInt(value) });
+                                    }}
                                 />
+
                             </td>
                             <td>{s.active ? "✅" : "❌"}</td>
                             <td>

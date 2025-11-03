@@ -41,7 +41,10 @@ export default function BookingsPage() {
                             <td>{b.id}</td>
                             <td>{b.user_name}</td>
                             <td>{b.service_name}</td>
-                            <td>{new Date(b.date).toLocaleString("hu-HU")}</td>
+                            <td>{new Date(b.start_time).toLocaleString("hu-HU", {
+                                dateStyle: "medium",
+                                timeStyle: "short"
+                            })}</td>
                             <td>{b.status}</td>
                             <td>
                                 <button className="btn btn-danger" onClick={() => handleDelete(b.id)}>
