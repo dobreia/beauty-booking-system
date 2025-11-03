@@ -1,0 +1,7 @@
+📖 5️⃣ Hogyan írd le a dolgozatban (ha OOP a tétel)
+
+A rendszer objektumorientált megközelítéssel készült.
+A backend oldalon minden entitáshoz külön osztály tartozik (UserController, ServiceController, stb.), melyek az adott objektumhoz tartozó CRUD műveleteket tartalmazzák.
+Az entitások modell szinten is reprezentálva vannak (pl. Service osztály), ami az adatok és a logika egységét biztosítja.
+A frontend komponensei a React könyvtárra épülnek, ahol a komponensek az objektumorientált szemlélet szerint önálló állapottal és viselkedéssel rendelkeznek.
+
