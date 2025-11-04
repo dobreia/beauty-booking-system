@@ -17,25 +17,42 @@ export default class BookingsController {
     }
 
 
-    static async create({ user_id, service_id, start_time, end_time }) {
+    static async create({ user_id, service_id, employee_id, start_time }) {
+        // 1️⃣ Lekérjük a szolgáltatás időtartamát
+        const serviceRes = await pool.query(
+            "SELECT duration_minutes FROM services WHERE id = $1",
+            [service_id]
+        );
+        if (serviceRes.rowCount === 0) throw new Error("Nincs ilyen szolgáltatás");
+        const duration = serviceRes.rows[0].duration_minutes;
+
+        // 2️⃣ Kiszámoljuk az end_time-ot
+        const start = new Date(start_time);
+        const end = new Date(start.getTime() + duration * 60 * 1000);
+
+        // 3️⃣ Ellenőrizzük, hogy a dolgozó szabad-e
         const conflict = await pool.query(
-            `SELECT * FROM bookings
-   WHERE service_id = $1
-   AND NOT ($3 <= start_time OR $2 >= end_time)`,
-            [service_id, start_time, end_time]
+            `SELECT 1 FROM bookings
+            WHERE employee_id = $1
+            AND status != 'cancelled'
+            AND NOT ($3 <= start_time OR $2 >= end_time)`,
+            [employee_id, start, end]
         );
+        if (conflict.rows.length > 0) {
+            throw new Error("Ez az időpont már foglalt ennél a dolgozónál!");
+        }
 
-        if (conflict.rows.length > 0)
-            throw new Error("Ez az időpont már foglalt!");
-
+        // 4️⃣ Új foglalás beszúrása
         const result = await pool.query(
-            `INSERT INTO bookings (user_id, service_id, start_time, end_time, status)
-     VALUES ($1, $2, $3, $4, 'pending')
-     RETURNING *`,
-            [user_id, service_id, start_time, end_time]
+            `INSERT INTO bookings (user_id, service_id, employee_id, start_time, end_time, status)
+            VALUES ($1, $2, $3, $4, $5, 'pending')
+            RETURNING *`,
+            [user_id, service_id, employee_id, start, end]
         );
+
         return result.rows[0];
     }
+
 
 
     static async delete(id) {

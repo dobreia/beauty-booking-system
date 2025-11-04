@@ -1,39 +1,53 @@
 import express from "express";
 import EmployeesController from "../controllers/EmployeesController.js";
+import { authRequired, adminOnly } from "../middleware/authMiddleware.js"; // <== EZT ADD HOZZÁ
 
 const router = express.Router();
 
-// GET all employees
+/**
+ * ✅ GET all employees (public)
+ * Nyilvános, hogy a foglalási oldalon is betölthesse a listát.
+ */
 router.get("/", async (req, res) => {
     try {
-        res.json(await EmployeesController.getAll());
+        const employees = await EmployeesController.getAll();
+        res.json(employees);
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-// POST new employee
-router.post("/", async (req, res) => {
+/**
+ * 🔐 POST new employee (admin only)
+ */
+router.post("/", authRequired, adminOnly, async (req, res) => {
     try {
-        res.status(201).json(await EmployeesController.create(req.body));
+        const created = await EmployeesController.create(req.body);
+        res.status(201).json(created);
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-// PUT update employee
-router.put("/:id", async (req, res) => {
+/**
+ * 🔐 PUT update employee (admin only)
+ */
+router.put("/:id", authRequired, adminOnly, async (req, res) => {
     try {
-        res.json(await EmployeesController.update(req.params.id, req.body));
+        const updated = await EmployeesController.update(req.params.id, req.body);
+        res.json(updated);
     } catch (e) {
         res.status(500).json({ error: e.message });
     }
 });
 
-// DELETE employee
-router.delete("/:id", async (req, res) => {
+/**
+ * 🔐 DELETE employee (admin only)
+ */
+router.delete("/:id", authRequired, adminOnly, async (req, res) => {
     try {
-        res.json(await EmployeesController.delete(req.params.id));
+        const deleted = await EmployeesController.delete(req.params.id);
+        res.json(deleted);
     } catch (e) {
         res.status(500).json({ error: e.message });
     }

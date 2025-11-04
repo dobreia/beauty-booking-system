@@ -7,26 +7,35 @@ import BookingPage from './pages/BookingPage'
 import ServiceAdminPage from './pages/admin/ServiceAdminPage'
 import UserPage from './pages/admin/UserPage'
 import EmployeesPage from './pages/admin/EmployeesPage'
-import BookingsPage from './pages/admin/BookingsPage'
+import BookingAdminPage from './pages/admin/BookingAdminPage'
 import LoginPage from './pages/LoginPage'
 import ServicePage from './pages/ServicePage'
+import { useEffect } from 'react'
 
 function App() {
+  const [user, setUser] = useState(null)
+
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
 
   return (
     <>
       <BrowserRouter>
-        <Navbar />
+        <Navbar user={user} setUser={setUser} />
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/booking" element={<BookingPage />} />
-          <Route path="/login" element={<LoginPage />} />
+          <Route path="/login" element={<LoginPage setUser={setUser} />} />
           <Route path="/services" element={<ServicePage />} />
           {/* Admin oldalak */}
           <Route path="/admin/services" element={<ServiceAdminPage />} />
           <Route path="/admin/users" element={<UserPage />} />
           <Route path="/admin/employees" element={<EmployeesPage />} />
-          <Route path="/admin/bookings" element={<BookingsPage />} />
+          <Route path="/admin/bookings" element={<BookingAdminPage />} />
         </Routes>
         <Footer />
       </BrowserRouter>

@@ -17,10 +17,13 @@ app.use(express.json());
 
 app.get("/api/health", (req, res) => res.json({ ok: true }));
 
+// 🔓 Nyilvános végpontok
 app.use("/api/auth", authRoutes);
 app.use("/api/services", servicesRoutes);
-app.use("/api/bookings", authRequired, adminOnly, bookingsRoutes);
-app.use("/api/employees", authRequired, adminOnly, employeesRoutes);
+app.use("/api/employees", employeesRoutes);  // <── már NEM védett
+
+// 🔐 Csak bejelentkezett vagy admin felhasználóknak
+app.use("/api/bookings", authRequired, bookingsRoutes);
 app.use("/api/users", authRequired, adminOnly, usersRoutes);
 
 const PORT = process.env.PORT || 3000;

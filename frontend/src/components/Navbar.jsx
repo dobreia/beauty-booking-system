@@ -4,23 +4,11 @@ import axios from "axios";
 import profileIcon from "../assets/icons/profile.svg";
 import "../styles/navbar.css";
 
-export default function Navbar() {
-    const [user, setUser] = useState(null);
+export default function Navbar({ user, setUser }) {
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const token = localStorage.getItem("token");
-        const savedUser = localStorage.getItem("user");
-        if (token && savedUser) {
-            setUser(JSON.parse(savedUser));
-            axios.defaults.headers.common["Authorization"] = "Bearer " + token;
-        }
-    }, []);
-
     const handleLogout = () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        delete axios.defaults.headers.common["Authorization"];
+        localStorage.clear();
         setUser(null);
         navigate("/");
     };
@@ -46,8 +34,8 @@ export default function Navbar() {
                             </Link>
                         </li>
                         <li className="nav-item">
-                            <Link to="/contact" className="nav-link">
-                                Kapcsolat
+                            <Link to="/booking" className="nav-link">
+                                Időpontfoglalás
                             </Link>
                         </li>
                     </ul>
