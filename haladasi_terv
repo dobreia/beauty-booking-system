@@ -95,9 +95,9 @@ Cél: ügyfél foglalási folyamat működjön és email értesítések menjenek
 Feladatok:
 
 frontend/src/pages/BookingPage.jsx
-  [ ] Form: név, email, szolgáltatás, dolgozó, időpont
-  [ ] POST /api/bookings -  új foglalás
-  [ ] Sikeres mentés után visszajelzés
+  [x] Form: név, email, szolgáltatás, dolgozó, időpont
+  [x] POST /api/bookings -  új foglalás
+  [x] Sikeres mentés után visszajelzés
 
 backend/src/routes/bookingsRoutes.js
   [ ] Foglalás mentése + email küldés
