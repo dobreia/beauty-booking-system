@@ -36,26 +36,29 @@ export default function BookingPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // Foglalás elküldése a backendnek
+ //Foglalás elküldése a backendnek
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
+      // Bejelentkezett felhasználói adatok lekérése
       const user = JSON.parse(localStorage.getItem("user"));
 
+      // API hívás a foglalás létrehozására
       await axios.post("/api/bookings", {
         user_id: user.id,
         service_id: form.service_id,
         employee_id: form.employee_id,
-        date: form.date
+        date: form.date,
       });
 
+      // Sikeres foglalás -> visszajelzés + űrlap ürítése
       setMessage("Sikeres foglalás!");
       setForm({ service_id: "", employee_id: "", date: "" });
 
     } catch (err) {
-      setMessage(
-        "Hiba: " + (err.response?.data?.error || "Ismeretlen hiba történt")
-      );
+      // Backend által adott hiba megjelenítése, ha van
+      setMessage("Hiba: " + (err.response?.data?.error || "Ismeretlen hiba történt"));
     }
   };
 
