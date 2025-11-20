@@ -1,6 +1,6 @@
 import pool from "../db.js";
 
-// Szolgáltatások vezérlője – üzleti logika megvalósítása
+
 export default class ServicesController {
 
   // Szolgáltatások listázása (GET)
