@@ -66,16 +66,7 @@ p {
 }
 
 /* --- Linkek --- */
-a {
-    color: var(--accent);
-    text-decoration: none;
-}
 
-a:hover {
-    color: #014d32;
-    /* a primary sötétebb árnyalata */
-    text-decoration: underline;
-}
 
 
 /* --- Gombok alap kinézete (ha nem bootstrapet használsz) --- */
