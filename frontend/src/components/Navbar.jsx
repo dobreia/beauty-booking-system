@@ -12,7 +12,7 @@ export default function Navbar({ user, setUser }) {
     };
 
     return (
-        <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+        <nav className="navbar navbar-expand-lg">
             <div className="container-lg d-flex justify-content-between align-items-center">
                 {/* Bal oldalt: márkanév */}
                 <Link className="navbar-brand fw-semibold" to="/">
@@ -55,7 +55,7 @@ export default function Navbar({ user, setUser }) {
                     {/* Profil dropdown */}
                     <div className="dropdown me-2">
                         <button
-                            className="btn btn-dark dropdown-toggle d-flex align-items-center"
+                            className="btn btn-light dropdown-toggle d-flex align-items-center"
                             type="button"
                             data-bs-toggle="dropdown"
                             aria-expanded="false"
@@ -63,7 +63,7 @@ export default function Navbar({ user, setUser }) {
                             <img src={profileIcon} alt="Profil" className="profile-icon" />
                         </button>
 
-                        <ul className="dropdown-menu dropdown-menu-end dropdown-menu-dark">
+                        <ul className="dropdown-menu dropdown-menu-end">
                             {!user ? (
                                 <>
                                     <li>

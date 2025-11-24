@@ -25,7 +25,7 @@
 
 /* --- Oldal háttér és szöveg --- */
 body {
-    background-color: var(--background);
+    background-color: #E3FFD9 !important;
     color: var(--text);
     font-family: "Nunito", sans-serif;
     line-height: 1.6;

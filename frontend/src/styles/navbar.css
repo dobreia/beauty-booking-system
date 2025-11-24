@@ -1,11 +1,13 @@
+
 .navbar {
+    position: relative;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    background-color: #f7f7f7;
+    color: black;
+    box-shadow: 0px 6px 30px 0px #6cb58f;
     padding: 10px 30px;
-    background-color: #222;
-    color: white;
-    position: relative;
     z-index: 100;
 }
 
@@ -16,14 +18,14 @@
 }
 
 .nav-link {
-    color: white;
+    color: #16422B !important;
     text-decoration: none;
     font-weight: 500;
     transition: color 0.2s ease;
 }
 
 .nav-link:hover {
-    color: #5aa5ff;
+    color: black !important;
 }
 
 /* Jobb oldali profil ikon */
@@ -35,28 +37,12 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    filter: brightness(0) invert(1);
     transition: transform 0.2s ease;
 }
 
 .profile-icon:hover {
     transform: scale(1.1);
 }
-
-.nav-link {
-    color: #eaeaea !important;
-    font-weight: 500;
-}
-
-.nav-link:hover {
-    color: #5aa5ff !important;
-}
-
-
-
-
-
-
 
 
 /* Egyszerű fade animáció */
