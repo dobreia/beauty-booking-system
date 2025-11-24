@@ -1,7 +1,7 @@
 import { useState } from "react";
 import "../styles/modal.css";
 
-export default function EditServiceModal({ service, onClose, onSave }) {
+export default function EditServiceModal({ service, onClose, onSave, token }) {
     const [form, setForm] = useState({
         name: service.name,
         duration_minutes: service.duration_minutes,
@@ -9,26 +9,54 @@ export default function EditServiceModal({ service, onClose, onSave }) {
         active: service.active,
     });
 
+    const [error, setError] = useState(null);
+
     const updateField = (field, value) => {
         setForm({ ...form, [field]: value });
+        setError(null); // 🔹 hibát törli, miután a user javít
     };
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        onSave(service.id, {
-            ...form,
-            duration_minutes: parseInt(form.duration_minutes),
-            price_cents: parseInt(form.price_cents),
-        });
-        onClose();
+        setError(null);
+
+        try {
+            const res = await fetch(`/api/services/${service.id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    ...form,
+                    duration_minutes: parseInt(form.duration_minutes),
+                    price_cents: parseInt(form.price_cents),
+                }),
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                setError(data.message || "Módosítás sikertelen.");
+                return;
+            }
+
+            onSave(service.id, data);
+            onClose();
+
+        } catch (err) {
+            setError("Hálózati hiba történt! Kérlek próbáld újra.");
+        }
     };
 
     return (
-        <div className="modal-overlay" onClick={onClose}>
+        <div className="modal-overlay" onClick={(e) => e.stopPropagation()}>
             <div className="modal-container" onClick={(e) => e.stopPropagation()}>
                 <h3>Szolgáltatás szerkesztése</h3>
 
-                <form onSubmit={handleSubmit} className="modal-form">
+                {error && <p className="modal-error">{error}</p>}
+
+                <form onSubmit={handleSubmit} className="modal-form" noValidate>
                     <label>Név</label>
                     <input
                         type="text"
@@ -51,7 +79,7 @@ export default function EditServiceModal({ service, onClose, onSave }) {
                     />
 
                     <div className="switch-row">
-                        <label>Aktív</label>
+                        <span>Aktív</span>
                         <label className="switch">
                             <input
                                 type="checkbox"
@@ -61,7 +89,6 @@ export default function EditServiceModal({ service, onClose, onSave }) {
                             <span className="slider"></span>
                         </label>
                     </div>
-
 
                     <div className="modal-actions">
                         <button type="button" className="btn-delete" onClick={onClose}>

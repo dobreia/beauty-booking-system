@@ -9,6 +9,8 @@ export default function ServicePage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [editingService, setEditingService] = useState(null);
+    const [formError, setFormError] = useState(null);
+
 
     const [newService, setNewService] = useState({
         name: "",
@@ -41,6 +43,8 @@ export default function ServicePage() {
 
     const handleAddService = async (e) => {
         e.preventDefault();
+        setError(null);
+
         try {
             const res = await fetch("/api/services", {
                 method: "POST",
@@ -56,12 +60,19 @@ export default function ServicePage() {
                 }),
             });
 
-            if (!res.ok) throw new Error("Hozzáadás sikertelen");
+            const data = await res.json();
+
+            if (!res.ok) {
+                setFormError(data.message || "Hozzáadás sikertelen");
+                return;
+            }
 
             setNewService({ name: "", duration_minutes: "", price_cents: "" });
+            setFormError(null);
             fetchServices();
-        } catch (err) {
-            setError("A szolgáltatás hozzáadása sikertelen.");
+
+        } catch {
+            setError("Hálózati hiba történt!");
         }
     };
 
@@ -109,7 +120,7 @@ export default function ServicePage() {
             <AdminHeader title="Szolgáltatások" />
 
             {/* Új szolgáltatás űrlap */}
-            <form onSubmit={handleAddService} className="service-form mt-3 mb-4">
+            <form onSubmit={handleAddService} className="service-form mt-3 mb-4" noValidate>
                 <div className="row g-2">
                     <div className="col-md-3">
                         <input
@@ -117,7 +128,6 @@ export default function ServicePage() {
                             placeholder="Név"
                             value={newService.name}
                             onChange={(e) => setNewService({ ...newService, name: e.target.value })}
-                            required
                         />
                     </div>
 
@@ -127,7 +137,6 @@ export default function ServicePage() {
                             placeholder="Időtartam (perc)"
                             value={newService.duration_minutes}
                             onChange={(e) => setNewService({ ...newService, duration_minutes: e.target.value })}
-                            required
                         />
                     </div>
 
@@ -137,7 +146,6 @@ export default function ServicePage() {
                             placeholder="Ár (Ft)"
                             value={newService.price_cents}
                             onChange={(e) => setNewService({ ...newService, price_cents: e.target.value })}
-                            required
                         />
                     </div>
 
@@ -146,6 +154,7 @@ export default function ServicePage() {
                     </div>
                 </div>
             </form>
+            {formError && <p className="form-error">{formError}</p>}
 
             {/* Szolgáltatások táblázat */}
             <table className="service-table">

@@ -61,6 +61,7 @@
     border-bottom: 1px solid #e3e7e4;
     text-align: center;
 }
+
 .service-table td:nth-child(2) {
     text-align: left;
     width: 150px;
@@ -138,4 +139,15 @@
 .btn-delete:hover {
     background: #a80f20;
     transform: scale(1.05);
+}
+
+.form-error {
+    background: #ffe5e8;
+    color: #a10b20;
+    padding: 10px;
+    border-radius: 6px;
+    margin-top: -15px;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    text-align: center;
 }

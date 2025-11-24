@@ -124,6 +124,16 @@
     transform: translateX(22px);
 }
 
+.modal-error {
+    background: #ffe5e8;
+    color: #a10b20;
+    padding: 10px;
+    border-radius: 6px;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
 
 /* Animációk */
 @keyframes popUp {

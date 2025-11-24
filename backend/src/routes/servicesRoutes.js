@@ -1,39 +1,45 @@
+// routes/services.js
 import express from "express";
 import ServicesController from "../controllers/ServicesController.js";
-import { authRequired, adminOnly } from "../middleware/authMiddleware.js";
-
 const router = express.Router();
 
-router.get("/", authRequired, adminOnly, async (req, res) => {
-    try {
-        res.json(await ServicesController.getAll());
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+// GET - szolgáltatások listája
+router.get("/", async (req, res) => {
+    const data = await ServicesController.getAll();
+    res.json(data);
 });
 
-router.post("/", authRequired, adminOnly, async (req, res) => {
-    try {
-        res.status(201).json(await ServicesController.create(req.body));
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+// POST - új szolgáltatás
+router.post("/", async (req, res) => {
+    const data = await ServicesController.create(req.body);
+
+    if (data.error) {
+        return res.status(data.status).json({ message: data.error });
     }
+
+    res.status(201).json(data);
 });
 
-router.put("/:id", authRequired, adminOnly, async (req, res) => {
-    try {
-        res.json(await ServicesController.update(req.params.id, req.body));
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+// PUT - szolgáltatás frissítése
+router.put("/:id", async (req, res) => {
+    const data = await ServicesController.update(req.params.id, req.body);
+
+    if (data.error) {
+        return res.status(data.status).json({ message: data.error });
     }
+
+    res.json(data);
 });
 
-router.delete("/:id", authRequired, adminOnly, async (req, res) => {
-    try {
-        res.json(await ServicesController.delete(req.params.id));
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+// DELETE - törlés
+router.delete("/:id", async (req, res) => {
+    const data = await ServicesController.delete(req.params.id);
+
+    if (data.error) {
+        return res.status(data.status).json({ message: data.error });
     }
+
+    res.json(data);
 });
 
 export default router;
