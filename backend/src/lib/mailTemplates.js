@@ -124,3 +124,4 @@ export function bookingRejectedTemplate({ name, serviceName, employeeName, start
   </div>`;
 }
 
+

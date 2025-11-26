@@ -5,7 +5,7 @@ import "../styles/auth.css";
 import visibleIcon from "../assets/icons/visible.png";
 import invisibleIcon from "../assets/icons/invisible.png";
 
-export default function RegisterPage({ setUser }) {
+export default function RegisterPage() {
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -35,43 +35,22 @@ export default function RegisterPage({ setUser }) {
                 password,
             });
 
-            // ✔ REG siker → automatikus login
-            const loginRes = await axios.post("/api/auth/login", {
-                email,
-                password,
-            });
-
-            localStorage.setItem("token", loginRes.data.token);
-            localStorage.setItem("user", JSON.stringify(loginRes.data.user));
-            setUser(loginRes.data.user);
-            axios.defaults.headers.common["Authorization"] =
-                "Bearer " + loginRes.data.token;
-
-            // ✔ Redirect logika
+            // SIkeres regisztráció → Login oldalra
             if (redirectTo) {
-                navigate(redirectTo);
+                navigate(`/login?redirect=${redirectTo}`);
             } else {
-                navigate("/");
+                navigate("/login");
             }
 
         } catch (err) {
             console.error("🔴 Register error:", err);
 
-            // Ha backend válaszolt
-            if (err.response) {
-                const data = err.response.data;
+            const message =
+                err.response?.data?.error ||
+                err.response?.data?.message ||
+                "Hiba a regisztrációnál!";
 
-                if (data && typeof data === "object") {
-                    setError(data.error || data.message || "Hiba a regisztrációnál!");
-                } else if (typeof data === "string") {
-                    setError(data);
-                } else {
-                    setError("Hiba a regisztrációnál!");
-                }
-            } else {
-                // Backend unreachable
-                setError("Hálózati hiba történt. Kérlek próbáld újra.");
-            }
+            setError(message);
         }
     };
 

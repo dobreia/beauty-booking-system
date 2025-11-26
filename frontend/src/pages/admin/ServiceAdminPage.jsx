@@ -172,7 +172,7 @@ export default function ServicePage() {
                         <tr key={s.id}>
                             <td>{s.id}</td>
                             <td>{s.name}</td>
-                            <td className="text-center">{s.duration_minutes / 60} óra</td>
+                            <td className="text-center">{s.duration_minutes} perc</td>
                             <td className="text-right">{s.price_cents.toLocaleString()} Ft</td>
                             <td className="text-center">
                                 <span className={`status-dot ${s.active ? "active" : "inactive"}`}></span>

@@ -265,4 +265,100 @@ export default class BookingsController {
 
         return booking;
     }
+
+    // BookingsController.js
+
+    static async reschedule(id, { start_time }) {
+
+        // 1️⃣ Időpont validáció
+        if (!start_time) {
+            const err = new Error("Az új időpont megadása kötelező!");
+            err.status = 400;
+            throw err;
+        }
+
+        const start = new Date(`${start_time}:00`);
+        if (isNaN(start.getTime())) {
+            const err = new Error("Érvénytelen dátum!");
+            err.status = 400;
+            throw err;
+        }
+        if (start < new Date()) {
+            const err = new Error("Múltbeli időpont nem választható!");
+            err.status = 400;
+            throw err;
+        }
+
+        // 2️⃣ Kapcsolt adatok lekérése
+        const bookingRes = await pool.query(
+            "SELECT user_id, service_id, employee_id FROM bookings WHERE id = $1",
+            [id]
+        );
+        if (!bookingRes.rowCount) {
+            const err = new Error("Foglalás nem található!");
+            err.status = 404;
+            throw err;
+        }
+
+        const { user_id, service_id, employee_id } = bookingRes.rows[0];
+
+        // 3️⃣ Időtartam lekérés a szolgáltatás alapján
+        const serviceRes = await pool.query(
+            "SELECT duration_minutes FROM services WHERE id = $1",
+            [service_id]
+        );
+        const duration = serviceRes.rows[0].duration_minutes;
+        const end = new Date(start.getTime() + duration * 60000);
+
+        // 4️⃣ Ütközés-ellenőrzés
+        const conflict = await pool.query(
+            `
+        SELECT 1 FROM bookings
+        WHERE employee_id=$1
+        AND id != $2
+        AND status IN ('pending','confirmed')
+        AND NOT ($4 <= start_time OR $3 >= end_time)
+        `,
+            [employee_id, id, start, end]
+        );
+        if (conflict.rowCount > 0) {
+            const err = new Error("Ebben az időpontban már van foglalás!");
+            err.status = 409;
+            throw err;
+        }
+
+        // 5️⃣ Frissítés → újra PENDING státusz
+        const updateRes = await pool.query(
+            `
+        UPDATE bookings 
+        SET start_time=$1, end_time=$2, status='pending'
+        WHERE id=$3
+        RETURNING *
+        `,
+            [start, end, id]
+        );
+
+        return updateRes.rows[0];
+    }
+
+    static async cancelOwnBooking(userId, bookingId) {
+        const result = await pool.query(
+            `UPDATE bookings 
+         SET status = 'cancelled'
+         WHERE id = $1 AND user_id = $2
+         RETURNING *`,
+            [bookingId, userId]
+        );
+
+        if (!result.rowCount) {
+            const err = new Error("Nem található vagy nem a saját foglalásod!");
+            err.status = 404;
+            throw err;
+        }
+
+        return { message: "Foglalás sikeresen lemondva!" };
+    }
+
 }
+
+

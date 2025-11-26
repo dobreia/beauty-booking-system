@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import '../styles/home.css';
 
 export default function HomePage() {
     const [health, setHealth] = useState(null);
+    const navigate = useNavigate();
+
+    const user = JSON.parse(localStorage.getItem("user"));
 
     useEffect(() => {
         fetch("/api/health")
@@ -10,6 +14,14 @@ export default function HomePage() {
             .then(setHealth)
             .catch(() => setHealth({ ok: false }));
     }, []);
+
+    const handleClick = () => {
+        if (user) {
+            navigate("/booking");
+        } else {
+            navigate("/services");
+        }
+    };
 
     return (
         <header className="hero">
@@ -19,9 +31,9 @@ export default function HomePage() {
                 <div className="separator"></div>
                 <h2 className="subtitle">Fodrászat • Smink • Manikűr • Tanácsadás</h2>
 
-                <a href="/booking" className="btn-cta">
+                <button onClick={handleClick} className="btn-cta">
                     Időpont foglalása
-                </a>
+                </button>
             </div>
         </header>
     );

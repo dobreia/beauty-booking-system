@@ -115,4 +115,24 @@ router.put("/:id/status", authRequired, adminOnly, async (req, res) => {
   }
 });
 
+// routes/bookings.js
+router.put("/:id/reschedule", authRequired, async (req, res) => {
+  try {
+    const result = await BookingsController.reschedule(req.params.id, req.body);
+    res.json(result);
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
+router.put("/:id/cancel", authRequired, async (req, res) => {
+  try {
+    const result = await BookingsController.cancelOwnBooking(req.user.id, req.params.id);
+    res.json(result);
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message });
+  }
+});
+
+
 export default router;

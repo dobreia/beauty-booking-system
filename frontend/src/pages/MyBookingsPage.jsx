@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import "../styles/my-bookings.css";
+import RescheduleModal from "../components/RescheduleModal";
 
 export default function MyBookingsPage() {
     const [bookings, setBookings] = useState([]);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
+    const [editing, setEditing] = useState(null);
 
     const formatDate = (dateStr) =>
         new Date(dateStr).toLocaleString("hu-HU", {
@@ -34,6 +36,37 @@ export default function MyBookingsPage() {
     if (loading) return <p>Betöltés...</p>;
     if (error) return <div className="alert alert-danger">{error}</div>;
 
+    const cancelBooking = async (id) => {
+        if (!window.confirm("Biztosan le szeretnéd mondani a foglalást?")) return;
+
+        try {
+            await axios.put(`/api/bookings/${id}/cancel`);
+            setBookings((prev) => prev.map(b => b.id === id ? { ...b, status: "cancelled" } : b));
+        } catch (err) {
+            alert(err.response?.data?.error || "Lemondás sikertelen!");
+        }
+    };
+
+    const openRescheduleModal = (booking) => {
+        setEditing(booking);
+    };
+
+    const saveReschedule = async (id, newStart) => {
+        try {
+            await axios.put(`/api/bookings/${id}/reschedule`, { start_time: newStart });
+
+            setEditing(null);
+
+            // UI frissítése új lekéréssel
+            const res = await axios.get("/api/bookings/my");
+            setBookings(res.data);
+
+        } catch (err) {
+            alert(err.response?.data?.error || "Módosítás sikertelen!");
+        }
+    };
+
+
     return (
         <div className="my-bookings-container">
             <h2 className="my-bookings-title">Saját foglalásaim</h2>
@@ -50,9 +83,9 @@ export default function MyBookingsPage() {
                             <th>Kezdés</th>
                             <th>Befejezés</th>
                             <th>Státusz</th>
+                            <th>Műveletek</th>
                         </tr>
                     </thead>
-
                     <tbody>
                         {bookings.map((b) => (
                             <tr key={b.id}>
@@ -71,10 +104,34 @@ export default function MyBookingsPage() {
                                                 : "Elutasítva"}
                                     </span>
                                 </td>
+                                <td className="actions-centered">
+                                    {(b.status === "confirmed" || b.status === "pending") &&
+                                        new Date(b.start_time) > new Date() && (
+                                            <div className="action-buttons">
+                                                <button className="btn-edit"
+                                                    onClick={() => openRescheduleModal(b)}>
+                                                    Módosítás
+                                                </button>
+                                                <button className="btn-delete"
+                                                    onClick={() => cancelBooking(b.id)}>
+                                                    Lemondás
+                                                </button>
+                                            </div>
+                                        )}
+                                </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
+            )}
+
+            {/* Modal megjelenítése */}
+            {editing && (
+                <RescheduleModal
+                    booking={editing}
+                    onSave={saveReschedule}
+                    onClose={() => setEditing(null)}
+                />
             )}
         </div>
     );

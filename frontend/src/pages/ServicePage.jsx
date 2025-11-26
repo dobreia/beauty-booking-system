@@ -54,7 +54,7 @@ export default function ServicesPage() {
                             <h5 className="card-title mb-2">{s.name}</h5>
 
                             <p className="text-muted mb-1 service-description">
-                                Időtartam: {Math.round(s.duration_minutes / 60 * 10) / 10} óra
+                                Időtartam: {Math.round(s.duration_minutes)} perc
                             </p>
 
                             <p className="service-price mb-3">

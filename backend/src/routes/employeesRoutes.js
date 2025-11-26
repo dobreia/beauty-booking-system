@@ -5,7 +5,7 @@ import { authRequired, adminOnly } from "../middleware/authMiddleware.js";
 const router = express.Router();
 
 // Csak admin kérheti le az alkalmazottakat
-router.get("/", authRequired, adminOnly, async (req, res) => {
+router.get("/", authRequired, async (req, res) => {
     try {
         const employees = await EmployeesController.getAll();
         res.json(employees);

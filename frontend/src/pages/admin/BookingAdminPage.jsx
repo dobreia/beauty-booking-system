@@ -206,6 +206,7 @@ export default function BookingAdminPage() {
                                     )}
                                 </div>
                             </td>
+                            
                         </tr>
                     ))}
                 </tbody>
