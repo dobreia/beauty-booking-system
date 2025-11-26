@@ -26,7 +26,7 @@ export default class BookingsController {
 
 
     static async create({ user_id, service_id, employee_id, start_time }) {
-        console.log("📩 [BookingsController.create] meghívva paraméterekkel:", {
+        console.log("📩 [BookingsController.create] paraméterek:", {
             user_id,
             service_id,
             employee_id,
@@ -39,42 +39,49 @@ export default class BookingsController {
                 "SELECT name, duration_minutes FROM services WHERE id = $1",
                 [service_id]
             );
-            console.log("🧾 Lekért szolgáltatás:", serviceRes.rows);
 
-            if (serviceRes.rowCount === 0) throw new Error("Nincs ilyen szolgáltatás");
+            if (serviceRes.rowCount === 0) {
+                const err = new Error("Nincs ilyen szolgáltatás");
+                err.status = 400;
+                throw err;
+            }
+
             const { name: service_name, duration_minutes: duration } = serviceRes.rows[0];
 
-            // 2️⃣ Időtartam kiszámítása
-            const start = new Date(start_time);
-            const end = new Date(start.getTime() + duration * 60 * 1000);
+            // 2️⃣ Időpontok helyes kezelése — nincs timezone konverzió!
+            const start = new Date(`${start_time}:00`); // 🔥 lokális értelmezés
+            const end = new Date(start.getTime() + duration * 60000);
+
             console.log("🕒 Számított időpontok:", { start, end });
 
             // 3️⃣ Ütközés ellenőrzése
             const conflict = await pool.query(
                 `SELECT 1 FROM bookings
-             WHERE employee_id = $1
-             AND status != 'cancelled'
-             AND NOT ($3 <= start_time OR $2 >= end_time)`,
+            WHERE employee_id = $1
+            AND status != 'cancelled'
+            AND NOT ($3 <= start_time OR $2 >= end_time)`,
                 [employee_id, start, end]
             );
-            console.log("⚖️ Foglalási ütközés:", conflict.rows.length);
 
-            if (conflict.rows.length > 0) {
-                console.warn("🚫 Időpont ütközik, dobunk hibát");
-                throw new Error("Ez az időpont már foglalt ennél a dolgozónál!");
+            if (conflict.rowCount > 0) {
+                const err = new Error("Ez az időpont már foglalt ennél a dolgozónál!");
+                err.status = 409;
+                throw err;
             }
 
             // 4️⃣ Beszúrás
-            const result = await pool.query(
-                `INSERT INTO bookings (user_id, service_id, employee_id, start_time, end_time, status)
-             VALUES ($1, $2, $3, $4, $5, 'pending')
-             RETURNING *`,
+            const insertRes = await pool.query(
+                `INSERT INTO bookings
+            (user_id, service_id, employee_id, start_time, end_time, status)
+            VALUES ($1, $2, $3, $4, $5, 'pending')
+            RETURNING *`,
                 [user_id, service_id, employee_id, start, end]
             );
-            console.log("✅ Foglalás beszúrva, ID:", result.rows[0].id);
 
-            // 5️⃣ Email értesítés
-            console.log("📨 Email küldés indul...");
+            const booking = insertRes.rows[0];
+            console.log("✅ Foglalás létrehozva ID:", booking.id);
+
+            // 5️⃣ Email küldés (ha nem fontos, kommentelhető)
             try {
                 const userRes = await pool.query(
                     "SELECT name, email FROM users WHERE id = $1",
@@ -85,57 +92,32 @@ export default class BookingsController {
                     [employee_id]
                 );
 
-                console.log("👤 User:", userRes.rows[0]);
-                console.log("💇‍♀️ Dolgozó:", employeeRes.rows[0]);
-
                 const user = userRes.rows[0];
                 const employee = employeeRes.rows[0];
 
-                // 🔹 Ügyfélnek
-                console.log("📤 Email küldése ügyfélnek:", user.email);
                 await sendMail(
                     user.email,
-                    "Foglalás rögzítve - Varázs Szépségszalon",
-                    `
-                <h2>Kedves ${user.name}!</h2>
-                <p>Köszönjük, hogy minket választottál!</p>
-                <ul>
-                  <li>Szolgáltatás: <b>${service_name}</b></li>
-                  <li>Munkatárs: <b>${employee.name}</b></li>
-                  <li>Kezdés: <b>${start.toLocaleString("hu-HU")}</b></li>
-                  <li>Befejezés: <b>${end.toLocaleString("hu-HU")}</b></li>
-                </ul>
-                <p>Státusz: <b>Feldolgozás alatt</b></p>
-                `
+                    "Foglalás rögzítve",
+                    `<p>Kedves ${user.name}! A foglalásod rögzítettük.</p>`
                 );
-
-                // 🔹 Adminnak
-                console.log("📤 Email küldése adminnak:", process.env.MAIL_USER);
                 await sendMail(
                     process.env.MAIL_USER,
                     "Új foglalás érkezett",
-                    `
-                <p>Új foglalás érkezett:</p>
-                <ul>
-                  <li>Név: <b>${user.name}</b></li>
-                  <li>Email: ${user.email}</li>
-                  <li>Szolgáltatás: ${service_name}</li>
-                  <li>Munkatárs: ${employee.name}</li>
-                  <li>Kezdés: ${start.toLocaleString("hu-HU")}</li>
-                </ul>
-                `
+                    `<p>Új foglalás ${user.name} által.</p>`
                 );
-                console.log("✅ Email küldések befejezve");
-            } catch (mailErr) {
-                console.error("❌ Email küldés közben hiba:", mailErr);
+            } catch (emailErr) {
+                console.error("📧 Email küldés hiba:", emailErr);
             }
 
-            return result.rows[0];
+            return booking;
+
         } catch (err) {
-            console.error("💥 [BookingsController.create] Hiba:", err);
+            console.error("💥 Foglalás létrehozása sikertelen:", err);
+            if (!err.status) err.status = 500;
             throw err;
         }
     }
+
 
     static async delete(id) {
         await pool.query("DELETE FROM bookings WHERE id=$1", [id]);

@@ -4,7 +4,7 @@ import "../../styles/adminDashboard.css";
 export default function AdminDashboard() {
     return (
         <div className="container mt-5 admin-dashboard">
-            <h1 className="mb-4 text-center">Admin felület</h1>
+            <h1 className="text-center">Admin felület</h1>
             <h2 className="text-center mb-4">Innen elérheted és kezelheted a rendszer fő elemeit</h2>
             <div className="row g-4 justify-content-center">
                 {/* Szolgáltatások */}

@@ -1,55 +1,95 @@
-
+/* 🌿 Alap navbar minden oldalra */
 .navbar {
-    position: relative;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #f7f7f7;
-    color: black;
-    box-shadow: 0px 6px 30px 0px #6cb58f;
-    padding: 10px 30px;
+    background: #ffffff;
+    color: #16422B !important;
+    box-shadow: 0px 6px 30px 0px #6cb58f !important;
+    padding: 10px 0;
     z-index: 100;
 }
 
-/* Bal oldali linkek */
-.navbar-links {
-    display: flex;
-    gap: 20px;
+.navbar-brand {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #16422B !important;
 }
 
 .nav-link {
     color: #16422B !important;
-    text-decoration: none;
     font-weight: 500;
-    transition: color 0.2s ease;
+    padding: 8px 12px;
+    transition: 0.25s ease-in-out;
 }
 
 .nav-link:hover {
-    color: black !important;
+    color: #0b281a !important;
+    text-decoration: none;
 }
 
-/* Jobb oldali profil ikon */
-.navbar-user {
-    position: relative;
+/* Profil ikon gomb — teljesen átlátszó */
+.navbar .btn.profile-btn,
+.navbar .btn.profile-btn:focus,
+.navbar .btn.profile-btn:hover,
+.navbar .btn.profile-btn:active {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
 }
 
-.profile-icon {
+/* PROBLÉMA MEGOLDÁS: Bootstrap szűrők eltávolítása, fehér ikon */
+.profile-icon,
+.navbar .btn.profile-btn img {
     width: 32px;
     height: 32px;
-    border-radius: 50%;
-    transition: transform 0.2s ease;
+    filter: invert(1) brightness(100) !important;
+    transition: transform 0.25s ease, filter 0.25s ease;
 }
 
 .profile-icon:hover {
-    transform: scale(1.1);
+    transform: scale(1.12);
+    filter: invert(1) brightness(150) !important;
+}
+
+/* Dropdown toggle nyíl elrejtése */
+.navbar .btn.profile-btn.dropdown-toggle::after {
+    display: none !important;
+}
+
+/* Hamburger ikon is legyen világos */
+.navbar-toggler {
+    filter: invert(1) brightness(100) !important;
+    border: none !important;
 }
 
 
-/* Egyszerű fade animáció */
+/* 🧙‍♂️ Külön stílus a főoldalon */
+.navbar.navbar-transparent {
+    background: transparent !important;
+    box-shadow: none !important;
+    position: absolute;
+    width: 100%;
+    top: 0;
+}
+
+.navbar.navbar-transparent .navbar-brand,
+.navbar.navbar-transparent .nav-link {
+    color: #e8f6ec !important;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}
+
+.navbar.navbar-transparent .profile-icon {
+    filter: invert(1) brightness(180) !important;
+}
+
+.navbar.navbar-transparent .nav-link:hover {
+    color: #ffffff !important;
+}
+
+/* 🌙 Fade animáció */
 @keyframes fadeIn {
     from {
         opacity: 0;
-        transform: translateY(-5px);
+        transform: translateY(-6px);
     }
 
     to {

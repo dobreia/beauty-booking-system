@@ -12,19 +12,17 @@ export default function HomePage() {
     }, []);
 
     return (
-        <>
-            <header className="hero">
-                <div className="content container">
-                    <h1>Varázs szépségszalon</h1>
-                    <h2>Fodrászat • Smink • Manikűr • Tanácsadás </h2>
+        <header className="hero">
+            <div className="overlay" />
+            <div className="content container">
+                <h1 className="title">Varázs Szépségszalon</h1>
+                <div className="separator"></div>
+                <h2 className="subtitle">Fodrászat • Smink • Manikűr • Tanácsadás</h2>
 
-                    {/*<a href="/booking"><button>Időpont foglalása</button></a>
-                    <div style={{ marginTop: 16 }}>
-                        <small>API health: {health ? (health.ok ? "OK ✅" : "HIBA ❌") : "..."}</small>
-                    </div>*/}
-                </div>
-            </header>
-        </>
-
+                <a href="/booking" className="btn-cta">
+                    Időpont foglalása
+                </a>
+            </div>
+        </header>
     );
 }

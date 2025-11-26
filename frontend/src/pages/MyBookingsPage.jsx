@@ -1,10 +1,21 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import "../styles/my-bookings.css";
 
 export default function MyBookingsPage() {
     const [bookings, setBookings] = useState([]);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(true);
+
+    const formatDate = (dateStr) =>
+        new Date(dateStr).toLocaleString("hu-HU", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            hour: "2-digit",
+            minute: "2-digit"
+        });
+
 
     useEffect(() => {
         const fetchBookings = async () => {
@@ -24,13 +35,13 @@ export default function MyBookingsPage() {
     if (error) return <div className="alert alert-danger">{error}</div>;
 
     return (
-        <div className="container mt-4">
-            <h2>🗓 Saját foglalásaim</h2>
+        <div className="my-bookings-container">
+            <h2 className="my-bookings-title">Saját foglalásaim</h2>
 
             {bookings.length === 0 ? (
-                <p className="text-muted mt-3">Nincs még foglalásod.</p>
+                <p className="no-bookings">Nincs még foglalásod.</p>
             ) : (
-                <table className="table table-striped mt-3 align-middle">
+                <table className="my-bookings-table">
                     <thead>
                         <tr>
                             <th>#</th>
@@ -41,24 +52,18 @@ export default function MyBookingsPage() {
                             <th>Státusz</th>
                         </tr>
                     </thead>
+
                     <tbody>
                         {bookings.map((b) => (
                             <tr key={b.id}>
                                 <td>{b.id}</td>
                                 <td>{b.service_name}</td>
                                 <td>{b.employee_name}</td>
-                                <td>{new Date(b.start_time).toLocaleString("hu-HU")}</td>
-                                <td>{new Date(b.end_time).toLocaleString("hu-HU")}</td>
+                                <td>{formatDate(b.start_time)}</td>
+                                <td>{formatDate(b.end_time)}</td>
                                 <td>
-                                    <span
-                                        className={
-                                            b.status === "confirmed"
-                                                ? "badge bg-success"
-                                                : b.status === "pending"
-                                                    ? "badge bg-warning text-dark"
-                                                    : "badge bg-danger"
-                                        }
-                                    >
+                                    <span className={`status-badge status-${b.status}`}>
+                                        <span className="status-dot"></span>
                                         {b.status === "confirmed"
                                             ? "Jóváhagyva"
                                             : b.status === "pending"

@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import AdminHeader from "../../components/AdminHeader";
 import EditServiceModal from "../../components/EditServiceModal";
 import "../../styles/services.css";
-import "../../styles/global.css";
 
 export default function ServicePage() {
     const [services, setServices] = useState([]);

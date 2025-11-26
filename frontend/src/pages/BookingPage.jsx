@@ -1,50 +1,50 @@
-// BookingPage.jsx – Foglalási űrlap
-// A komponens a szolgáltatásokat és dolgozókat a backend API-ból tölti be,
-// majd elküldi a POST /api/bookings kérést a foglalás rögzítéséhez.
-
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useSearchParams } from "react-router-dom";
+import "../styles/booking-public.css";
 
 export default function BookingPage() {
+
+  const [searchParams] = useSearchParams();
+  const defaultService = searchParams.get("service") || "";
 
   const [services, setServices] = useState([]);
   const [employees, setEmployees] = useState([]);
 
   const [form, setForm] = useState({
-    service_id: "",
+    service_id: defaultService,
     employee_id: "",
     date: ""
   });
 
   const [message, setMessage] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
 
-  // Szolgáltatások és dolgozók lekérdezése
   useEffect(() => {
     const loadData = async () => {
-      const [s, e] = await Promise.all([
-        axios.get("/api/services"),
-        axios.get("/api/employees")
-      ]);
-      setServices(s.data);
-      setEmployees(e.data);
+      try {
+        const [s, e] = await Promise.all([
+          axios.get("/api/services"),
+          axios.get("/api/employees")
+        ]);
+        setServices(s.data);
+        setEmployees(e.data);
+      } catch {
+        setMessage("Nem sikerült betölteni az adatokat.");
+      }
     };
     loadData();
   }, []);
 
-  // Űrlap mező frissítése
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
- //Foglalás elküldése a backendnek
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      // Bejelentkezett felhasználói adatok lekérése
       const user = JSON.parse(localStorage.getItem("user"));
 
-      // API hívás a foglalás létrehozására
       await axios.post("/api/bookings", {
         user_id: user.id,
         service_id: form.service_id,
@@ -52,41 +52,53 @@ export default function BookingPage() {
         date: form.date,
       });
 
-      // Sikeres foglalás -> visszajelzés + űrlap ürítése
-      setMessage("Sikeres foglalás!");
+      setMessage("A foglalás sikeresen leadva!");
+      setIsSuccess(true);
       setForm({ service_id: "", employee_id: "", date: "" });
-
     } catch (err) {
-      // Backend által adott hiba megjelenítése, ha van
-      setMessage("Hiba: " + (err.response?.data?.error || "Ismeretlen hiba történt"));
+      setMessage(err.response?.data?.error || "Hiba történt!");
+      setIsSuccess(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      {/* Szolgáltatás kiválasztása */}
-      <select name="service_id" value={form.service_id} onChange={handleChange}>
-        <option value="">Válassz szolgáltatást</option>
-        {services.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-      </select>
+    <div className="booking-container">
+      <h2>Időpont foglalása</h2>
 
-      {/* Dolgozó kiválasztása */}
-      <select name="employee_id" value={form.employee_id} onChange={handleChange}>
-        <option value="">Válassz dolgozót</option>
-        {employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)}
-      </select>
+      <form onSubmit={handleSubmit}>
+        <select name="service_id" value={form.service_id} onChange={handleChange}>
+          <option value="">Válassz szolgáltatást</option>
+          {services.map(s => (
+            <option key={s.id} value={s.id}>
+              {s.name}
+            </option>
+          ))}
+        </select>
 
-      {/* Dátum-idő kiválasztása */}
-      <input
-        type="datetime-local"
-        name="date"
-        value={form.date}
-        onChange={handleChange}
-      />
+        <select name="employee_id" value={form.employee_id} onChange={handleChange}>
+          <option value="">Válassz dolgozót</option>
+          {employees.map(e => (
+            <option key={e.id} value={e.id}>{e.name}</option>
+          ))}
+        </select>
 
-      <button type="submit">Foglalás</button>
+        <input
+          type="datetime-local"
+          name="date"
+          value={form.date}
+          onChange={handleChange}
+        />
 
-      {message && <p>{message}</p>}
-    </form>
+        <button type="submit" className="btn-book-submit">
+          Foglalás leadása
+        </button>
+
+        {message && (
+          <p className={`booking-message ${isSuccess ? "success" : "error"}`}>
+            {message}
+          </p>
+        )}
+      </form>
+    </div>
   );
 }

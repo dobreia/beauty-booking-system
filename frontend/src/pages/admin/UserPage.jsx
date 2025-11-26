@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import AdminHeader from "../../components/AdminHeader";
 
 import "../../styles/users.css";
-import "../../styles/global.css";
 
 export default function UsersPage() {
     const [users, setUsers] = useState([]);
