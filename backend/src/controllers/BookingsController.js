@@ -34,15 +34,34 @@ export default class BookingsController {
         });
 
         try {
-            // 1️⃣ Kötelező mezők ellenőrzése
-            if (!user_id || !service_id || !employee_id || !start_time) {
-                const err = new Error("Minden mező kitöltése kötelező!");
+            // 1️⃣ Kötelező mezők külön ellenőrzése
+            if (!user_id) {
+                const err = new Error("Nincs kiválasztva ügyfél!");
+                err.status = 400;
+                throw err;
+            }
+
+            if (!employee_id) {
+                const err = new Error("Nincs kiválasztva dolgozó!");
+                err.status = 400;
+                throw err;
+            }
+
+            if (!service_id) {
+                const err = new Error("Nincs kiválasztva szolgáltatás!");
+                err.status = 400;
+                throw err;
+            }
+
+            if (!start_time) {
+                const err = new Error("A kezdési időpont megadása kötelező!");
                 err.status = 400;
                 throw err;
             }
 
             // 2️⃣ Dátum validáció
-            const start = new Date(`${start_time}:00`); // helyes lokális értelmezés
+            const start = new Date(`${start_time}:00`);
+
             if (isNaN(start.getTime())) {
                 const err = new Error("Érvénytelen dátum!");
                 err.status = 400;
@@ -55,31 +74,29 @@ export default class BookingsController {
                 throw err;
             }
 
-            // 3️⃣ Szolgáltatás lekérdezése
+            // 3️⃣ Szolgáltatás ellenőrzés
             const serviceRes = await pool.query(
-                "SELECT name, duration_minutes, active FROM services WHERE id = $1",
+                "SELECT duration_minutes, active FROM services WHERE id = $1",
                 [service_id]
             );
 
-            if (serviceRes.rowCount === 0 || !serviceRes.rows[0].active) {
-                const err = new Error("A szolgáltatás nem elérhető!");
+            if (!serviceRes.rowCount || !serviceRes.rows[0].active) {
+                const err = new Error("A szolgáltatás nem elérhető vagy inaktív!");
                 err.status = 400;
                 throw err;
             }
 
-            const { name: service_name, duration_minutes: duration } = serviceRes.rows[0];
-
-            // 4️⃣ Időtartam számítása
+            const duration = serviceRes.rows[0].duration_minutes;
             const end = new Date(start.getTime() + duration * 60000);
 
-            // 5️⃣ Ütközés ellenőrzés (pending + confirmed)
+            // 4️⃣ Ütközés ellenőrzés
             const conflict = await pool.query(
                 `
-            SELECT 1 FROM bookings
-            WHERE employee_id = $1
-            AND status IN ('pending', 'confirmed')
-            AND NOT ($3 <= start_time OR $2 >= end_time)
-            `,
+        SELECT 1 FROM bookings
+        WHERE employee_id = $1
+        AND status IN ('pending', 'confirmed')
+        AND NOT ($3 <= start_time OR $2 >= end_time)
+        `,
                 [employee_id, start, end]
             );
 
@@ -89,32 +106,26 @@ export default class BookingsController {
                 throw err;
             }
 
-            // 6️⃣ Beszúrás az adatbázisba
+            // 5️⃣ Insert
             const insertRes = await pool.query(
                 `
-            INSERT INTO bookings
-            (user_id, service_id, employee_id, start_time, end_time, status)
-            VALUES ($1, $2, $3, $4, $5, 'pending')
-            RETURNING *
-            `,
+        INSERT INTO bookings
+        (user_id, service_id, employee_id, start_time, end_time, status)
+        VALUES ($1, $2, $3, $4, $5, 'pending')
+        RETURNING *
+        `,
                 [user_id, service_id, employee_id, start, end]
             );
 
             const booking = insertRes.rows[0];
-            console.log("✅ Foglalás létrehozva ID:", booking.id);
 
-            // 7️⃣ Opcionális email értesítések
+            // 6️⃣ Email küldés async
             (async () => {
                 try {
                     const userRes = await pool.query(
                         "SELECT name, email FROM users WHERE id = $1",
                         [user_id]
                     );
-                    const employeeRes = await pool.query(
-                        "SELECT name FROM employees WHERE id = $1",
-                        [employee_id]
-                    );
-
                     const user = userRes.rows[0];
 
                     await sendMail(
@@ -142,6 +153,7 @@ export default class BookingsController {
             throw err;
         }
     }
+
 
 
 

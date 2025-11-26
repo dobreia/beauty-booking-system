@@ -107,14 +107,13 @@ export default function BookingAdminPage() {
             {error && <div className="form-error">{error}</div>}
 
             {/* Új foglalás űrlap */}
-            <form onSubmit={createBooking} className="booking-form mt-3 mb-4">
+            <form onSubmit={createBooking} className="booking-form mt-3 mb-4" noValidate>
                 <div className="row g-2">
                     {/* Ügyfél kiválasztás */}
                     <div className="col-md-3">
                         <select
                             value={newBooking.user_id}
                             onChange={(e) => setNewBooking({ ...newBooking, user_id: e.target.value })}
-                            required
                         >
                             <option value="">Válassz ügyfelet</option>
                             {users.map(u => (
@@ -128,7 +127,6 @@ export default function BookingAdminPage() {
                         <select
                             value={newBooking.employee_id}
                             onChange={(e) => setNewBooking({ ...newBooking, employee_id: e.target.value })}
-                            required
                         >
                             <option value="">Válassz dolgozót</option>
                             {employees.map(e => (
@@ -142,7 +140,6 @@ export default function BookingAdminPage() {
                         <select
                             value={newBooking.service_id}
                             onChange={(e) => setNewBooking({ ...newBooking, service_id: e.target.value })}
-                            required
                         >
                             <option value="">Válassz szolgáltatást</option>
                             {services.map(s => (
@@ -157,7 +154,6 @@ export default function BookingAdminPage() {
                             type="datetime-local"
                             value={newBooking.start_time}
                             onChange={(e) => setNewBooking({ ...newBooking, start_time: e.target.value })}
-                            required
                         />
                     </div>
 

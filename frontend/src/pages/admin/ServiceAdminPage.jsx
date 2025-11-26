@@ -117,7 +117,7 @@ export default function ServicePage() {
     return (
         <div className="admin-container container-lg">
             <AdminHeader title="Szolgáltatások" />
-
+            {formError && <p className="form-error">{formError}</p>}
             {/* Új szolgáltatás űrlap */}
             <form onSubmit={handleAddService} className="service-form mt-3 mb-4" noValidate>
                 <div className="row g-2">
@@ -153,7 +153,7 @@ export default function ServicePage() {
                     </div>
                 </div>
             </form>
-            {formError && <p className="form-error">{formError}</p>}
+
 
             {/* Szolgáltatások táblázat */}
             <table className="service-table">
