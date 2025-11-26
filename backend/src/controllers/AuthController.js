@@ -1,38 +1,23 @@
 import pool from "../db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { validateUserInput } from "../lib/validateUser.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
 
-// Email formátum ellenőrzése
-const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
-
 export default class AuthController {
 
+    // ===========================
+    // REGISZTRÁCIÓ
+    // ===========================
     static async register(req, res) {
         try {
             const { name, email, password } = req.body;
 
-            if (!name || name.trim().length === 0) {
-                return res.status(400).json({ error: "Név megadása kötelező!" });
-            }
-
-            if (!email || email.trim().length === 0) {
-                return res.status(400).json({ error: "E-mail mező kitöltése kötelező!" });
-            }
-            if (!password || password.trim().length === 0) {
-                return res.status(400).json({ error: "Jelszó megadása kötelező!" });
-            }
-
-            if (!emailRegex.test(email)) {
-                return res.status(400).json({ error: "Érvénytelen e-mail formátum!" });
-            }
-
-            if (!passwordRegex.test(password)) {
-                return res.status(400).json({
-                    error: "A jelszónak minimum 6 karakterből kell állnia, és tartalmaznia kell kis- és nagybetűt, valamint számot!"
-                });
+            // 🔍 közös validáció használata
+            const validationError = validateUserInput({ name, email, password });
+            if (validationError) {
+                return res.status(400).json({ error: validationError });
             }
 
             const existing = await pool.query(
@@ -40,14 +25,14 @@ export default class AuthController {
                 [email]
             );
             if (existing.rows.length > 0) {
-                return res.status(409).json({ error: "A megadott e-mail cím vagy jelszó hibás." });
+                return res.status(409).json({ error: "Ez az email cím már regisztrálva van!" });
             }
 
             const hash = await bcrypt.hash(password, 10);
 
             const result = await pool.query(
                 "INSERT INTO users (name, email, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING id, name, email, role",
-                [name, email, hash, "user"]
+                [name.trim(), email.trim(), hash, "user"]
             );
 
             res.status(201).json(result.rows[0]);
@@ -58,24 +43,22 @@ export default class AuthController {
         }
     }
 
+
+    // ===========================
+    // LOGIN
+    // ===========================
     static async login(req, res) {
         try {
             const { email, password } = req.body;
 
-            if (!email || email.trim().length === 0) {
-                return res.status(400).json({ error: "Email mező kitöltése kötelező!" });
+            if (!email || !password) {
+                return res.status(400).json({ error: "Email és jelszó megadása kötelező!" });
             }
 
-            if (!password || password.trim().length === 0) {
-                return res.status(400).json({ error: "Jelszó megadása kötelező!" });
-            }
-
-            if (!emailRegex.test(email)) {
-                return res.status(400).json({ error: "Érvénytelen email formátum!" });
-            }
-
-
-            const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+            const result = await pool.query(
+                "SELECT * FROM users WHERE email = $1",
+                [email.trim()]
+            );
             const user = result.rows[0];
 
             if (!user) {
@@ -95,7 +78,12 @@ export default class AuthController {
 
             res.json({
                 token,
-                user: { id: user.id, name: user.name, email: user.email, role: user.role },
+                user: {
+                    id: user.id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                },
             });
 
         } catch (err) {

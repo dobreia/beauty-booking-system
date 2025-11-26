@@ -14,8 +14,8 @@
 .admin-header button {
     position: absolute;
     left: 0;
-    background-color: var(--primary);
-    border: 1px solid #ccc;
+    background-color: #00271C;
+    border: none;
     padding: 6px 14px;
     font-size: 14px;
     border-radius: 6px;

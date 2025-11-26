@@ -128,7 +128,7 @@ export default function UsersPage() {
             <AdminHeader title="Felhasználók" />
 
             {/* Új felhasználó űrlap */}
-            <form onSubmit={handleAddUser} className="users-form mt-3 mb-4">
+            <form onSubmit={handleAddUser} className="users-form mt-3 mb-4" noValidate>
                 <div className="row g-2">
                     <div className="col-md-3">
                         <input
@@ -136,7 +136,7 @@ export default function UsersPage() {
                             placeholder="Név"
                             value={newUser.name}
                             onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-                            required
+                            
                         />
                     </div>
 
@@ -146,7 +146,7 @@ export default function UsersPage() {
                             placeholder="Email"
                             value={newUser.email}
                             onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                            required
+                            
                         />
                     </div>
 
@@ -156,7 +156,7 @@ export default function UsersPage() {
                             placeholder="Jelszó"
                             value={newUser.password || ""}
                             onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                            required
+                            
                         />
                     </div>
 
@@ -205,12 +205,14 @@ export default function UsersPage() {
                                 </select>
                             </td>
                             <td className="actions-centered">
-                                <button
-                                    className="btn-delete"
-                                    onClick={() => handleDelete(u.id)}
-                                >
-                                    Törlés
-                                </button>
+                                {u.id !== JSON.parse(localStorage.getItem("user"))?.id && (
+                                    <button
+                                        className="btn-delete"
+                                        onClick={() => handleDelete(u.id)}
+                                    >
+                                        Törlés
+                                    </button>
+                                )}
                             </td>
                         </tr>
                     ))}

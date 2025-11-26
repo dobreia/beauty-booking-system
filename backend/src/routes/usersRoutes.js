@@ -56,7 +56,7 @@ router.put("/:id", async (req, res) => {
 // DELETE user
 router.delete("/:id", async (req, res) => {
     try {
-        const result = await UsersController.delete(req.params.id);
+        const result = await UsersController.delete(req.params.id, req.user.id);
         res.json(result);
     } catch (e) {
         console.error(e);
