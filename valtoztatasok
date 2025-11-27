@@ -4,3 +4,8 @@ Főoldalton nem jo az idoponfoglals
 public szolgaltatasok nem jo az ar
 
 admin inaktiv szolg toreles nem jo
+
+admin oldal elérhető mindenkinek
+jogosulatlan elérésnél legyen /login átirányítás
+
+backend hibaüzenetek átnézése

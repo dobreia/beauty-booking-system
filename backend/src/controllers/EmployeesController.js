@@ -18,13 +18,13 @@ export default class EmployeesController {
         }
 
         if (!email || email.trim() === "") {
-            const err = new Error("Az email megadása kötelező!");
+            const err = new Error("Az e-mail megadása kötelező!");
             err.status = 400;
             throw err;
         } else {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(email)) {
-                const err = new Error("Érvénytelen email formátum!");
+                const err = new Error("Érvénytelen e-mail formátum!");
                 err.status = 400;
                 throw err;
             }

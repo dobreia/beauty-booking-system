@@ -188,7 +188,7 @@ export default function BookingAdminPage() {
 
                             <td data-label="Státusz" className="status-cell">
                                 <span className={`status-dot ${b.status}`} />
-                                {b.status === "pending" ? "Folyamatban" :
+                                {b.status === "pending" ? "Függőben" :
                                     b.status === "confirmed" ? "Jóváhagyva" : "Elutasítva"}
                             </td>
 

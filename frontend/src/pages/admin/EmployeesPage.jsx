@@ -86,7 +86,7 @@ export default function EmployeesPage() {
 
   return (
     <div className="admin-container container-lg">
-      <AdminHeader title="Dolgozók" />
+      <AdminHeader title="Munkatársak" />
       {formError && <p className="form-error">{formError}</p>}
       {/* Új alkalmazott űrlap */}
       <form onSubmit={handleAddEmployee} className="employee-form mt-3 mb-4" noValidate>
