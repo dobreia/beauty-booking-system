@@ -20,11 +20,14 @@ app.get("/api/health", (req, res) => res.json({ ok: true }));
 // 🔓 Nyilvános végpontok
 app.use("/api/auth", authRoutes);
 app.use("/api/services", servicesRoutes);
-app.use("/api/employees", employeesRoutes);  // <── már NEM védett
+app.use("/api/employees", employeesRoutes);
 
 // 🔐 Csak bejelentkezett vagy admin felhasználóknak
 app.use("/api/bookings", authRequired, bookingsRoutes);
 app.use("/api/users", authRequired, adminOnly, usersRoutes);
+app.use("/api/admin", authRequired, adminOnly, (req, res) => {
+    res.json({ message: "Admin hozzáférés engedélyezve!" });
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`API running on http://localhost:${PORT}`));

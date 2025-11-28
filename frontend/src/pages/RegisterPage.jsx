@@ -6,25 +6,29 @@ import visibleIcon from "../assets/icons/visible.png";
 import invisibleIcon from "../assets/icons/invisible.png";
 
 export default function RegisterPage() {
-    const navigate = useNavigate();
-    const location = useLocation();
+    const navigate = useNavigate(); // A navigációhoz szükséges hook
+    const location = useLocation(); // Az URL paraméterekhez szükséges hook
 
-    const [name, setName] = useState("");
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
-    const [error, setError] = useState("");
-    const [showPassword1, setShowPassword1] = useState(false);
-    const [showPassword2, setShowPassword2] = useState(false);
+    // Állapotok a felhasználó adataihoz és hibákhoz
+    const [name, setName] = useState(""); // Felhasználó neve
+    const [email, setEmail] = useState(""); // Felhasználó email címe
+    const [password, setPassword] = useState(""); // Jelszó
+    const [confirmPassword, setConfirmPassword] = useState(""); // Jelszó megerősítése
+    const [error, setError] = useState(""); // Hibák tárolása
+    const [showPassword1, setShowPassword1] = useState(false); // Jelszó láthatósága az első mezőben
+    const [showPassword2, setShowPassword2] = useState(false); // Jelszó láthatósága a megerősítés mezőben
 
+    // Lekérjük a redirect paramétert, ha van
     const redirectTo = new URLSearchParams(location.search).get("redirect") || null;
 
+    // Regisztráció kezelése
     const handleRegister = async (e) => {
-        e.preventDefault();
-        setError("");
+        e.preventDefault(); // Form alapértelmezett viselkedésének letiltása
+        setError(""); // Hibaüzenet törlése
 
+        // Jelszavak összehasonlítása
         if (password !== confirmPassword) {
-            setError("A két jelszó nem egyezik meg!");
+            setError("A két jelszó nem egyezik meg!"); // Ha a jelszavak nem egyeznek, hibaüzenet
             return;
         }
 
@@ -33,33 +37,35 @@ export default function RegisterPage() {
                 name,
                 email,
                 password,
-            });
+            }); // Regisztrációs API kérés
 
-            // SIkeres regisztráció → Login oldalra
+            // Sikeres regisztráció után navigálás a login oldalra
             if (redirectTo) {
-                navigate(`/login?redirect=${redirectTo}`);
+                navigate(`/login?redirect=${redirectTo}`); // Redirect paraméterrel való navigálás
             } else {
-                navigate("/login");
+                navigate("/login"); // Alapértelmezett login oldalra navigálás
             }
 
         } catch (err) {
-            console.error("🔴 Register error:", err);
+            console.error("Register error:", err); // Hiba logolása
 
+            // Hibaüzenet beállítása
             const message =
                 err.response?.data?.error ||
                 err.response?.data?.message ||
                 "Hiba a regisztrációnál!";
-
-            setError(message);
+            setError(message); // Hibás regisztrációs próbálkozás üzenet megjelenítése
         }
     };
 
     return (
-        <div className="auth-bg">
-            <div className="auth-container">
-                <h2>Regisztráció</h2>
-                {error && <p className="text-danger text-center">{error}</p>}
+        <div className="auth-bg"> {/* Auth háttér */}
+            <div className="auth-container"> {/* Auth konténer */}
+                <h2>Regisztráció</h2> {/* Regisztrációs cím */}
 
+                {error && <p className="text-danger text-center">{error}</p>} {/* Hibaüzenet megjelenítése */}
+
+                {/* Regisztrációs űrlap */}
                 <form onSubmit={handleRegister} className="auth-form" noValidate>
                     <div className="mb-3">
                         <label className="form-label">Név</label>
@@ -68,7 +74,7 @@ export default function RegisterPage() {
                             className="form-control"
                             required
                             value={name}
-                            onChange={(e) => setName(e.target.value)}
+                            onChange={(e) => setName(e.target.value)} // Név változtatása
                         />
                     </div>
 
@@ -79,7 +85,7 @@ export default function RegisterPage() {
                             className="form-control"
                             required
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            onChange={(e) => setEmail(e.target.value)} // Email változtatása
                         />
                     </div>
 
@@ -87,15 +93,15 @@ export default function RegisterPage() {
                         <label className="form-label">Jelszó</label>
                         <div className="password-wrapper">
                             <input
-                                type={showPassword1 ? "text" : "password"}
+                                type={showPassword1 ? "text" : "password"} // Jelszó láthatóság változtatása
                                 className="form-control"
                                 value={password}
-                                onChange={(e) => setPassword(e.target.value)}
+                                onChange={(e) => setPassword(e.target.value)} // Jelszó változtatása
                                 required
                             />
                             <span
                                 className="toggle-password"
-                                onClick={() => setShowPassword1(!showPassword1)}
+                                onClick={() => setShowPassword1(!showPassword1)} // Jelszó láthatóság togglézása
                             >
                                 <img src={showPassword1 ? invisibleIcon : visibleIcon} alt="" />
                             </span>
@@ -104,33 +110,34 @@ export default function RegisterPage() {
                         <label className="form-label">Jelszó megerősítése</label>
                         <div className="password-wrapper">
                             <input
-                                type={showPassword2 ? "text" : "password"}
+                                type={showPassword2 ? "text" : "password"} // Jelszó megerősítés láthatóság változtatása
                                 className="form-control"
                                 value={confirmPassword}
-                                onChange={(e) => setConfirmPassword(e.target.value)}
+                                onChange={(e) => setConfirmPassword(e.target.value)} // Jelszó megerősítése változtatása
                                 required
                             />
                             <span
                                 className="toggle-password"
-                                onClick={() => setShowPassword2(!showPassword2)}
+                                onClick={() => setShowPassword2(!showPassword2)} // Jelszó megerősítés láthatóság togglézása
                             >
                                 <img src={showPassword2 ? invisibleIcon : visibleIcon} alt="" />
                             </span>
                         </div>
                     </div>
 
-                    <button type="submit" className="btn-auth">
+                    <button type="submit" className="btn-auth"> {/* Regisztráció gomb */}
                         Regisztráció
                     </button>
                 </form>
 
+                {/* Ha már van fiók, a bejelentkezés link */}
                 <p className="auth-link">
                     Van már fiókod?{" "}
                     <span
                         onClick={() =>
                             navigate(
                                 redirectTo
-                                    ? `/login?redirect=${redirectTo}`
+                                    ? `/login?redirect=${redirectTo}` // Redirect paraméterrel bejelentkezés
                                     : "/login"
                             )
                         }

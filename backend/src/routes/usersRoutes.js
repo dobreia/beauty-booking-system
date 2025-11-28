@@ -1,35 +1,29 @@
-// routes/users.js
 import express from "express";
 import UsersController from "../controllers/UsersController.js";
 import { authRequired, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// csak bejelentkezett user → auth
+// Csak bejelentkezett felhasználó férhet hozzá a végponthoz (auth middleware)
 router.use(authRequired);
 
-// csak admin kezelheti a /users végpontokat
-function requireAdmin(req, res, next) {
-    if (!req.user || req.user.role !== "admin") {
-        return res.status(403).json({ error: "Nincs admin jogosultság." });
-    }
-    next();
-}
-
+// Csak admin hozzáférés a többi végponthoz
 router.use(adminOnly);
 
-// GET all users
+// GET - Összes felhasználó lekérése
 router.get("/", async (req, res) => {
     try {
+        // Felhasználók lekérése
         const users = await UsersController.getAll();
+        // Válaszban visszaadjuk a felhasználók listáját
         res.json(users);
     } catch (e) {
         console.error(e);
-        res.status(500).json({ error: "Hiba történt a felhasználók lekérése során." });
+        res.status(500).json({ error: "Hiba történt a felhasználók lekérése során." }); // Hibaüzenet, ha a lekérés nem sikerült
     }
 });
 
-// POST new user
+// POST - Új felhasználó létrehozása
 router.post("/", async (req, res) => {
     try {
         const created = await UsersController.create(req.body);
@@ -41,7 +35,7 @@ router.post("/", async (req, res) => {
     }
 });
 
-// PUT update user role
+// PUT - Felhasználó szerepkörének módosítása
 router.put("/:id", async (req, res) => {
     try {
         const updated = await UsersController.updateRole(req.params.id, req.body);
@@ -53,7 +47,7 @@ router.put("/:id", async (req, res) => {
     }
 });
 
-// DELETE user
+// DELETE - Felhasználó törlése
 router.delete("/:id", async (req, res) => {
     try {
         const result = await UsersController.delete(req.params.id, req.user.id);

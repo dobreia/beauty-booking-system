@@ -8,6 +8,8 @@ import {
 } from "../lib/mailTemplates.js";
 
 export default class BookingsController {
+
+    // Szolgáltatások lekérése
     static async getAll() {
         const query = `
             SELECT 
@@ -28,9 +30,7 @@ export default class BookingsController {
         return result.rows;
     }
 
-
-
-
+    // Új foglalás létrehozása
     static async create({ user_id, service_id, employee_id, start_time }) {
         console.log("📩 [BookingsController.create] paraméterek:", {
             user_id,
@@ -40,7 +40,7 @@ export default class BookingsController {
         });
 
         try {
-            // 1️⃣ Kötelező mezők külön ellenőrzése
+            // Kötelező mezők ellenőrzése
             if (!user_id) {
                 const err = new Error("Nincs kiválasztva ügyfél!");
                 err.status = 400;
@@ -65,7 +65,7 @@ export default class BookingsController {
                 throw err;
             }
 
-            // 2️⃣ Dátum validáció
+            // Dátum validáció
             const start = new Date(`${start_time}:00`);
 
             if (isNaN(start.getTime())) {
@@ -80,12 +80,11 @@ export default class BookingsController {
                 throw err;
             }
 
-            // 3️⃣ Szolgáltatás ellenőrzés
+            // Szolgáltatás ellenőrzése
             const serviceRes = await pool.query(
                 "SELECT name, duration_minutes, active FROM services WHERE id = $1",
                 [service_id]
             );
-
 
             if (!serviceRes.rowCount || !serviceRes.rows[0].active) {
                 const err = new Error("A szolgáltatás nem elérhető vagy inaktív!");
@@ -96,14 +95,14 @@ export default class BookingsController {
             const duration = serviceRes.rows[0].duration_minutes;
             const end = new Date(start.getTime() + duration * 60000);
 
-            // 4️⃣ Ütközés ellenőrzés
+            // Ütközés ellenőrzés
             const conflict = await pool.query(
                 `
-        SELECT 1 FROM bookings
-        WHERE employee_id = $1
-        AND status IN ('pending', 'confirmed')
-        AND NOT ($3 <= start_time OR $2 >= end_time)
-        `,
+                SELECT 1 FROM bookings
+                WHERE employee_id = $1
+                AND status IN ('pending', 'confirmed')
+                AND NOT ($3 <= start_time OR $2 >= end_time)
+                `,
                 [employee_id, start, end]
             );
 
@@ -113,21 +112,20 @@ export default class BookingsController {
                 throw err;
             }
 
-            // 5️⃣ Insert
+            // Új foglalás beszúrása az adatbázisba 
             const insertRes = await pool.query(
                 `
-        INSERT INTO bookings
-        (user_id, service_id, employee_id, start_time, end_time, status)
-        VALUES ($1, $2, $3, $4, $5, 'pending')
-        RETURNING *
-        `,
+                INSERT INTO bookings
+                (user_id, service_id, employee_id, start_time, end_time, status)
+                VALUES ($1, $2, $3, $4, $5, 'pending')
+                RETURNING *
+                `,
                 [user_id, service_id, employee_id, start, end]
             );
 
             const booking = insertRes.rows[0];
 
-            // 6️⃣ Email küldés async
-            // 6️⃣ Email küldés async
+            // Email küldés async módon
             (async () => {
                 try {
                     const userRes = await pool.query(
@@ -142,7 +140,7 @@ export default class BookingsController {
                     );
                     const employee = employeeRes.rows[0];
 
-                    // 📌 Ügyfél email
+                    // Ügyfél email
                     await sendMail(
                         user.email,
                         "Foglalás rögzítve ✔",
@@ -155,7 +153,7 @@ export default class BookingsController {
                         })
                     );
 
-                    // 📌 Szalonnak email
+                    // Szalonnak email
                     await sendMail(
                         process.env.MAIL_USER,
                         "Új foglalás érkezett 📬",
@@ -174,7 +172,6 @@ export default class BookingsController {
                 }
             })();
 
-
             return booking;
 
         } catch (err) {
@@ -184,14 +181,13 @@ export default class BookingsController {
         }
     }
 
-
-
-
+    // Foglalás törlése
     static async delete(id) {
         await pool.query("DELETE FROM bookings WHERE id=$1", [id]);
         return { message: "Foglalás törölve" };
     }
 
+    // Foglalás státuszának frissítése
     static async updateStatus(id, status) {
         const validStatuses = ["pending", "confirmed", "cancelled"];
         if (!validStatuses.includes(status)) {
@@ -200,11 +196,11 @@ export default class BookingsController {
 
         const result = await pool.query(
             `
-        UPDATE bookings
-        SET status = $1
-        WHERE id = $2
-        RETURNING *
-        `,
+            UPDATE bookings
+            SET status = $1
+            WHERE id = $2
+            RETURNING *
+            `,
             [status, id]
         );
 
@@ -214,24 +210,24 @@ export default class BookingsController {
 
         const booking = result.rows[0];
 
-        // 🔍 Kapcsolt adatok lekérése
+        // Kapcsolt adatok lekérése
         const details = await pool.query(`
-      SELECT 
-        u.name AS user_name, u.email,
-        s.name AS service_name,
-        e.name AS employee_name
-      FROM bookings b
-      JOIN users u ON b.user_id = u.id
-      JOIN services s ON b.service_id = s.id
-      JOIN employees e ON b.employee_id = e.id
-      WHERE b.id = $1
-    `, [id]);
+            SELECT 
+                u.name AS user_name, u.email,
+                s.name AS service_name,
+                e.name AS employee_name
+            FROM bookings b
+            JOIN users u ON b.user_id = u.id
+            JOIN services s ON b.service_id = s.id
+            JOIN employees e ON b.employee_id = e.id
+            WHERE b.id = $1
+        `, [id]);
 
         const d = details.rows[0];
         const start = new Date(booking.start_time).toLocaleString("hu-HU");
         const end = new Date(booking.end_time).toLocaleString("hu-HU");
 
-        // 📧 Email küldés async módon
+        // Email küldés async módon
         (async () => {
             try {
                 if (status === "confirmed") {
@@ -266,11 +262,10 @@ export default class BookingsController {
         return booking;
     }
 
-    // BookingsController.js
-
+    // Foglalás időpontjának módosítása
     static async reschedule(id, { start_time }) {
 
-        // 1️⃣ Időpont validáció
+        // Időpont validáció
         if (!start_time) {
             const err = new Error("Az új időpont megadása kötelező!");
             err.status = 400;
@@ -289,7 +284,7 @@ export default class BookingsController {
             throw err;
         }
 
-        // 2️⃣ Kapcsolt adatok lekérése
+        // Kapcsolt adatok lekérése
         const bookingRes = await pool.query(
             "SELECT user_id, service_id, employee_id FROM bookings WHERE id = $1",
             [id]
@@ -302,7 +297,7 @@ export default class BookingsController {
 
         const { user_id, service_id, employee_id } = bookingRes.rows[0];
 
-        // 3️⃣ Időtartam lekérés a szolgáltatás alapján
+        // Időtartam lekérés a szolgáltatás alapján
         const serviceRes = await pool.query(
             "SELECT duration_minutes FROM services WHERE id = $1",
             [service_id]
@@ -310,15 +305,15 @@ export default class BookingsController {
         const duration = serviceRes.rows[0].duration_minutes;
         const end = new Date(start.getTime() + duration * 60000);
 
-        // 4️⃣ Ütközés-ellenőrzés
+        // Ütközés-ellenőrzés
         const conflict = await pool.query(
             `
-        SELECT 1 FROM bookings
-        WHERE employee_id=$1
-        AND id != $2
-        AND status IN ('pending','confirmed')
-        AND NOT ($4 <= start_time OR $3 >= end_time)
-        `,
+            SELECT 1 FROM bookings
+            WHERE employee_id=$1
+            AND id != $2
+            AND status IN ('pending','confirmed')
+            AND NOT ($4 <= start_time OR $3 >= end_time)
+            `,
             [employee_id, id, start, end]
         );
         if (conflict.rowCount > 0) {
@@ -327,26 +322,27 @@ export default class BookingsController {
             throw err;
         }
 
-        // 5️⃣ Frissítés → újra PENDING státusz
+        // Frissítés → újra PENDING státusz
         const updateRes = await pool.query(
             `
-        UPDATE bookings 
-        SET start_time=$1, end_time=$2, status='pending'
-        WHERE id=$3
-        RETURNING *
-        `,
+            UPDATE bookings 
+            SET start_time=$1, end_time=$2, status='pending'
+            WHERE id=$3
+            RETURNING *
+            `,
             [start, end, id]
         );
 
         return updateRes.rows[0];
     }
 
+    // Saját foglalás lemondása
     static async cancelOwnBooking(userId, bookingId) {
         const result = await pool.query(
             `UPDATE bookings 
-         SET status = 'cancelled'
-         WHERE id = $1 AND user_id = $2
-         RETURNING *`,
+            SET status = 'cancelled'
+            WHERE id = $1 AND user_id = $2
+            RETURNING *`,
             [bookingId, userId]
         );
 
@@ -360,5 +356,3 @@ export default class BookingsController {
     }
 
 }
-
-

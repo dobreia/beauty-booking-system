@@ -5,11 +5,13 @@ import AdminHeader from "../../components/AdminHeader";
 import "../../styles/booking.css";
 
 export default function BookingAdminPage() {
-    const [bookings, setBookings] = useState([]);
-    const [employees, setEmployees] = useState([]);
-    const [services, setServices] = useState([]);
-    const [users, setUsers] = useState([]);
+    // Állapotváltozók az adatok tárolására
+    const [bookings, setBookings] = useState([]); // Foglalások állapota
+    const [employees, setEmployees] = useState([]); // Dolgozók állapota
+    const [services, setServices] = useState([]); // Szolgáltatások állapota
+    const [users, setUsers] = useState([]); // Felhasználók állapota
 
+    // Új foglalás adatai
     const [newBooking, setNewBooking] = useState({
         user_id: "",
         service_id: "",
@@ -17,138 +19,149 @@ export default function BookingAdminPage() {
         start_time: "",
     });
 
+    // Hibák állapota
     const [error, setError] = useState("");
 
+    // Token az autentikációhoz
     const token = localStorage.getItem("token");
-    const authHeader = token ? { Authorization: "Bearer " + token } : {};
+    const authHeader = token ? { Authorization: "Bearer " + token } : {}; // Auth header a kérésekhez
 
+    // Felhasználók betöltése
     const fetchUsers = async () => {
         try {
             const res = await axios.get("/api/users", { headers: authHeader });
-            setUsers(Array.isArray(res.data) ? res.data : []);
+            setUsers(Array.isArray(res.data) ? res.data : []); // Felhasználók beállítása
         } catch (err) {
-            setUsers([]);
+            setUsers([]); // Ha hiba történik, üres lista
         }
     };
 
+    // Dolgozók betöltése
     const fetchEmployees = async () => {
         try {
             const res = await axios.get("/api/employees", { headers: authHeader });
-            setEmployees(Array.isArray(res.data) ? res.data : []);
+            setEmployees(Array.isArray(res.data) ? res.data : []); // Dolgozók beállítása
         } catch (err) {
-            console.error("EMPLOYEE LOAD ERROR", err);
-            setEmployees([]); // fontos!
+            console.error("EMPLOYEE LOAD ERROR", err); // Hiba loggolása
+            setEmployees([]); // Ha hiba történik, üres lista
         }
     };
 
+    // Szolgáltatások betöltése
     const fetchServices = async () => {
         try {
             const res = await axios.get("/api/services", { headers: authHeader });
-            setServices(Array.isArray(res.data) ? res.data : []);
+            setServices(Array.isArray(res.data) ? res.data : []); // Szolgáltatások beállítása
         } catch {
-            setServices([]);
+            setServices([]); // Ha hiba történik, üres lista
         }
     };
 
+    // Foglalások betöltése
     const fetchBookings = async () => {
         try {
             const res = await axios.get("/api/bookings", { headers: authHeader });
-            setBookings(Array.isArray(res.data) ? res.data : []);
+            setBookings(Array.isArray(res.data) ? res.data : []); // Foglalások beállítása
         } catch (err) {
-            setError("Nem sikerült betölteni a foglalásokat");
+            setError("Nem sikerült betölteni a foglalásokat"); // Hibaüzenet beállítása
         }
     };
 
+    // Adatok betöltése a komponens indulásakor
     useEffect(() => {
         fetchEmployees();
         fetchServices();
         fetchBookings();
         fetchUsers();
-    }, []);
+    }, []); // Ez csak egyszer fut le a komponens betöltődésekor
 
+    // Új foglalás létrehozása
     const createBooking = async (e) => {
-        e.preventDefault();
-        setError("");
+        e.preventDefault(); // Alapértelmezett űrlap submit elkerülése
+        setError(""); // Hibák törlése
 
         try {
             const body = {
                 ...newBooking,
-                start_time: newBooking.start_time,
+                start_time: newBooking.start_time, // Új foglalás kezdési időpontja
             };
 
+            // POST kérés a foglalás létrehozásához
             await axios.post("/api/bookings", body, { headers: authHeader });
 
-            fetchBookings();
+            fetchBookings(); // Foglalások frissítése
             setNewBooking({
                 user_id: "",
                 service_id: "",
                 employee_id: "",
                 start_time: "",
-            });
+            }); // Új foglalás után a form törlése
 
         } catch (err) {
-            setError(err.response?.data?.error || "Foglalás sikertelen");
+            setError(err.response?.data?.error || "Foglalás sikertelen"); // Hibaüzenet beállítása
         }
     };
 
+    // Foglalás státuszának módosítása
     const updateStatus = async (id, status) => {
         try {
+            // PUT kérés a státusz módosításához
             await axios.put(`/api/bookings/${id}/status`, { status }, { headers: authHeader });
-            fetchBookings();
+            fetchBookings(); // Foglalások frissítése
         } catch {
-            alert("Hiba a státusz módosításakor");
+            alert("Hiba a státusz módosításakor"); // Hibaüzenet, ha a státusz módosítása nem sikerült
         }
     };
 
     return (
-        <div className="admin-container container-lg">
-            <AdminHeader title="Foglalások kezelése" />
+        <div className="admin-container container-lg"> {/* Admin konténer */}
+            <AdminHeader title="Foglalások kezelése" /> {/* Admin fejléce */}
 
-            {error && <div className="form-error">{error}</div>}
+            {error && <div className="form-error">{error}</div>} {/* Hibák megjelenítése */}
 
             {/* Új foglalás űrlap */}
             <form onSubmit={createBooking} className="booking-form mt-3 mb-4" noValidate>
                 <div className="row g-2">
-                    {/* Ügyfél kiválasztás */}
+                    {/* Ügyfél kiválasztása */}
                     <div className="col-md-3">
                         <select
                             value={newBooking.user_id}
                             onChange={(e) => setNewBooking({ ...newBooking, user_id: e.target.value })}
                         >
-                            <option value="">Válassz ügyfelet</option>
+                            <option value="">Válassz ügyfelet</option> {/* Ügyfél kiválasztás */}
                             {users.map(u => (
                                 <option key={u.id} value={u.id}>{u.name}</option>
                             ))}
                         </select>
                     </div>
 
-                    {/* Dolgozó */}
+                    {/* Dolgozó kiválasztása */}
                     <div className="col-md-3">
                         <select
                             value={newBooking.employee_id}
                             onChange={(e) => setNewBooking({ ...newBooking, employee_id: e.target.value })}
                         >
-                            <option value="">Válassz dolgozót</option>
+                            <option value="">Válassz dolgozót</option> {/* Dolgozó kiválasztás */}
                             {employees.map(e => (
                                 <option key={e.id} value={e.id}>{e.name}</option>
                             ))}
                         </select>
                     </div>
 
-                    {/* Szolgáltatás */}
+                    {/* Szolgáltatás kiválasztása */}
                     <div className="col-md-3">
                         <select
                             value={newBooking.service_id}
                             onChange={(e) => setNewBooking({ ...newBooking, service_id: e.target.value })}
                         >
-                            <option value="">Válassz szolgáltatást</option>
+                            <option value="">Válassz szolgáltatást</option> {/* Szolgáltatás kiválasztás */}
                             {services.map(s => (
                                 <option key={s.id} value={s.id}>{s.name}</option>
                             ))}
                         </select>
                     </div>
 
-                    {/* Kezdő időpont */}
+                    {/* Kezdő időpont kiválasztása */}
                     <div className="col-md-2">
                         <input
                             type="datetime-local"
@@ -157,15 +170,14 @@ export default function BookingAdminPage() {
                         />
                     </div>
 
-                    {/* Gomb */}
+                    {/* Felvitel gomb */}
                     <div className="col-md-1">
-                        <button className="btn-success">Felvitel</button>
+                        <button className="btn-success">Felvitel</button> {/* Új foglalás hozzáadása */}
                     </div>
                 </div>
             </form>
 
-
-            {/* Foglalások táblája */}
+            {/* Foglalások táblázata */}
             <table className="booking-table">
                 <thead>
                     <tr>
@@ -206,7 +218,6 @@ export default function BookingAdminPage() {
                                     )}
                                 </div>
                             </td>
-                            
                         </tr>
                     ))}
                 </tbody>

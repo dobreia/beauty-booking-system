@@ -4,17 +4,20 @@ import { authRequired, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Csak admin kérheti le az alkalmazottakat
+// Összes alkalmazott lekérése
 router.get("/", authRequired, async (req, res) => {
     try {
         const employees = await EmployeesController.getAll();
+        // Az alkalmazottak listájának visszaadása
         res.json(employees);
     } catch (err) {
         console.error("EMPLOYEE GET ERROR:", err);
+        // Hibaüzenet válasz visszaadása
         res.status(err.status || 500).json({ error: err.message });
     }
 });
 
+// Új alkalmazott felvétele (admin jogosultság szükséges)
 router.post("/", authRequired, adminOnly, async (req, res) => {
     try {
         const employee = await EmployeesController.create(req.body);
@@ -25,6 +28,7 @@ router.post("/", authRequired, adminOnly, async (req, res) => {
     }
 });
 
+// Alkalmazott módosítása (admin jogosultság szükséges)
 router.put("/:id", authRequired, adminOnly, async (req, res) => {
     try {
         const employee = await EmployeesController.update(req.params.id, req.body);
@@ -35,6 +39,7 @@ router.put("/:id", authRequired, adminOnly, async (req, res) => {
     }
 });
 
+// Alkalmazott törlése (admin jogosultság szükséges)
 router.delete("/:id", authRequired, adminOnly, async (req, res) => {
     try {
         const response = await EmployeesController.delete(req.params.id);

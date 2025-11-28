@@ -4,77 +4,82 @@ import EditServiceModal from "../../components/EditServiceModal";
 import "../../styles/services.css";
 
 export default function ServicePage() {
-    const [services, setServices] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [editingService, setEditingService] = useState(null);
-    const [formError, setFormError] = useState(null);
+    // Állapotváltozók a szolgáltatások kezelésére
+    const [services, setServices] = useState([]); // Szolgáltatások listája
+    const [loading, setLoading] = useState(true); // Betöltés állapota
+    const [error, setError] = useState(null); // Hibaüzenet
+    const [editingService, setEditingService] = useState(null); // Szerkesztett szolgáltatás állapota
+    const [formError, setFormError] = useState(null); // Űrlap hibaüzenet
 
-
+    // Új szolgáltatás adatai
     const [newService, setNewService] = useState({
         name: "",
         duration_minutes: "",
         price_cents: "",
     });
 
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token"); // Autentikációs token
 
+    // Szolgáltatások betöltése az API-ból
     const fetchServices = async () => {
         try {
             const res = await fetch("/api/services", {
                 headers: { Authorization: `Bearer ${token}` },
             });
 
-            if (!res.ok) throw new Error("Betöltési hiba");
+            if (!res.ok) throw new Error("Betöltési hiba"); // Hibaüzenet, ha a válasz nem sikeres
 
-            const data = await res.json();
-            setServices(data);
+            const data = await res.json(); // Szolgáltatások JSON adatainak lekérése
+            setServices(data); // Szolgáltatások beállítása
         } catch (err) {
-            setError("Hiba történt a szolgáltatások betöltése során.");
+            setError("Hiba történt a szolgáltatások betöltése során."); // Hibaüzenet beállítása
         } finally {
-            setLoading(false);
+            setLoading(false); // Betöltés befejezése
         }
     };
 
+    // Használatkor betölti a szolgáltatásokat
     useEffect(() => {
-        fetchServices();
-    }, []);
+        fetchServices(); // Szolgáltatások betöltése a komponens indulásakor
+    }, []); // Csak egyszer fut le
 
+    // Új szolgáltatás hozzáadása
     const handleAddService = async (e) => {
-        e.preventDefault();
-        setError(null);
+        e.preventDefault(); // Alapértelmezett form submit letiltása
+        setError(null); // Hiba törlése
 
         try {
             const res = await fetch("/api/services", {
                 method: "POST",
                 headers: {
-                    "Content-Type": "application/json",
+                    "Content-Type": "application/json", // JSON body küldése
                     Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
                     name: newService.name,
-                    duration_minutes: parseInt(newService.duration_minutes),
-                    price_cents: parseInt(newService.price_cents),
-                    active: true,
+                    duration_minutes: parseInt(newService.duration_minutes), // Időtartam átalakítása számra
+                    price_cents: parseInt(newService.price_cents), // Ár átalakítása számra
+                    active: true, // Szolgáltatás aktív állapota
                 }),
             });
 
             const data = await res.json();
 
             if (!res.ok) {
-                setFormError(data.message || "Hozzáadás sikertelen");
+                setFormError(data.message || "Hozzáadás sikertelen"); // Hibaüzenet beállítása
                 return;
             }
 
-            setNewService({ name: "", duration_minutes: "", price_cents: "" });
-            setFormError(null);
-            fetchServices();
+            setNewService({ name: "", duration_minutes: "", price_cents: "" }); // Űrlap törlése
+            setFormError(null); // Hibák törlése
+            fetchServices(); // Szolgáltatások frissítése
 
         } catch {
-            setError("Hálózati hiba történt!");
+            setError("Hálózati hiba történt!"); // Hálózati hiba üzenet
         }
     };
 
+    // Szolgáltatás frissítése
     const handleUpdate = async (id, updated) => {
         try {
             const res = await fetch(`/api/services/${id}`, {
@@ -83,41 +88,43 @@ export default function ServicePage() {
                     "Content-Type": "application/json",
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify(updated),
+                body: JSON.stringify(updated), // Frissített adatok küldése
             });
 
-            if (!res.ok) throw new Error("Szerkesztés sikertelen");
+            if (!res.ok) throw new Error("Szerkesztés sikertelen"); // Hibaüzenet, ha a módosítás nem sikerül
 
-            fetchServices();
+            fetchServices(); // Szolgáltatások frissítése
         } catch (err) {
-            alert("A szolgáltatás módosítása nem sikerült!");
+            alert("A szolgáltatás módosítása nem sikerült!"); // Hiba üzenet a felhasználónak
         }
     };
 
+    // Szolgáltatás törlése
     const handleDelete = async (id) => {
-        if (!window.confirm("Biztosan törlöd?")) return;
+        if (!window.confirm("Biztosan törlöd?")) return; // Törlés megerősítése
 
         try {
             const res = await fetch(`/api/services/${id}`, {
                 method: "DELETE",
-                headers: { Authorization: `Bearer ${token}` },
+                headers: { Authorization: `Bearer ${token}` }, // Autentikációs header
             });
 
             if (!res.ok) throw new Error("Törlés sikertelen");
 
-            fetchServices();
+            fetchServices(); // Szolgáltatások frissítése törlés után
         } catch (err) {
-            alert("A törlés nem sikerült!");
+            alert("A törlés nem sikerült!"); // Törlés hibaüzenet
         }
     };
 
-    if (loading) return <p>Betöltés...</p>;
-    if (error) return <p className="text-danger text-center">{error}</p>;
+    if (loading) return <p>Betöltés...</p>; // Betöltés közbeni üzenet
+    if (error) return <p className="text-danger text-center">{error}</p>; // Hibaüzenet megjelenítése
 
     return (
-        <div className="admin-container container-lg">
-            <AdminHeader title="Szolgáltatások" />
-            {formError && <p className="form-error">{formError}</p>}
+        <div className="admin-container container-lg"> {/* Admin felület konténer */}
+            <AdminHeader title="Szolgáltatások" /> {/* Admin fejléc */}
+            {formError && <p className="form-error">{formError}</p>} {/* Űrlap hibaüzenet */}
+
             {/* Új szolgáltatás űrlap */}
             <form onSubmit={handleAddService} className="service-form mt-3 mb-4" noValidate>
                 <div className="row g-2">
@@ -149,13 +156,12 @@ export default function ServicePage() {
                     </div>
 
                     <div className="col-md-3">
-                        <button type="submit" className="btn-success">Hozzáadás</button>
+                        <button type="submit" className="btn-success">Hozzáadás</button> {/* Hozzáadás gomb */}
                     </div>
                 </div>
             </form>
 
-
-            {/* Szolgáltatások táblázat */}
+            {/* Szolgáltatások táblázata */}
             <table className="service-table">
                 <thead>
                     <tr>
@@ -189,9 +195,9 @@ export default function ServicePage() {
             {/* Modal megjelenítése */}
             {editingService && (
                 <EditServiceModal
-                    service={editingService}
-                    onClose={() => setEditingService(null)}
-                    onSave={handleUpdate}
+                    service={editingService} // A szerkesztett szolgáltatás adatainak átadása
+                    onClose={() => setEditingService(null)} // Modal bezárása
+                    onSave={handleUpdate} // Szolgáltatás frissítése
                 />
             )}
         </div>

@@ -2,15 +2,15 @@ import pool from "../db.js";
 
 export default class ServicesController {
 
-  // Szolgáltatások listázása (GET)
+  // Szolgáltatások listázása publikus módon
   static async getAllPublic() {
     const result = await pool.query(
       "SELECT id, name, duration_minutes, price_cents FROM services WHERE active = true ORDER BY id"
     );
     return result.rows;
   }
-  
-  // Adminnak minden kell (active mezővel)
+
+  // Admin számára minden szolgáltatás listázása, figyelembe véve az aktív státuszt
   static async getAllAdmin() {
     const result = await pool.query(
       "SELECT id, name, duration_minutes, price_cents, active FROM services ORDER BY id"
@@ -18,11 +18,10 @@ export default class ServicesController {
     return result.rows;
   }
 
-
-  // Új szolgáltatás létrehozása (POST)
+  // Új szolgáltatás létrehozása
   static async create({ name, duration_minutes, price_cents, active }) {
 
-    // Szerveroldali validációk
+    // Validáljuk a bemeneti adatokat
     if (!name || name.trim() === "") {
       return { error: "A név megadása kötelező!", status: 400 };
     }
@@ -40,6 +39,7 @@ export default class ServicesController {
     }
 
     try {
+      // Szolgáltatás beszúrása az adatbázisba
       const result = await pool.query(
         `INSERT INTO services (name, duration_minutes, price_cents, active)
          VALUES ($1, $2, $3, $4) RETURNING *`,
@@ -52,10 +52,10 @@ export default class ServicesController {
     }
   }
 
-
-  // Szolgáltatás módosítása (PUT)
+  // Szolgáltatás módosítása
   static async update(id, data) {
 
+    // Validáljuk a módosított adatokat
     if (!data.name || data.name.trim() === "") {
       return { error: "A név megadása kötelező!", status: 400 };
     }
@@ -66,7 +66,6 @@ export default class ServicesController {
       return { error: "Az időtartamnak pozitív számnak kell lennie!", status: 400 };
     }
 
-
     if (data.price_cents === "" || data.price_cents === null || isNaN(data.price_cents)) {
       return { error: "Az ár megadása kötelező!", status: 400 };
     } else if (data.price_cents <= 0) {
@@ -74,6 +73,7 @@ export default class ServicesController {
     }
 
     try {
+      // Szolgáltatás frissítése az adatbázisban
       const result = await pool.query(
         `UPDATE services
        SET name=$1, duration_minutes=$2, price_cents=$3, active=$4
@@ -82,6 +82,7 @@ export default class ServicesController {
         [data.name, data.duration_minutes, data.price_cents, data.active, id]
       );
 
+      // Ha nem található a módosítandó szolgáltatás
       if (result.rowCount === 0) {
         return { error: "A szolgáltatás nem található!", status: 404 };
       }
@@ -94,15 +95,16 @@ export default class ServicesController {
     }
   }
 
-
-  // Szolgáltatás törlése (DELETE)
+  // Szolgáltatás törlése
   static async delete(id) {
     try {
+      // Szolgáltatás törlése az adatbázisból
       const result = await pool.query(
         `DELETE FROM services WHERE id=$1 RETURNING *`,
         [id]
       );
 
+      // Ha nem található a törlendő szolgáltatás
       if (result.rowCount === 0) {
         return { error: "A szolgáltatás nem található!", status: 404 };
       }

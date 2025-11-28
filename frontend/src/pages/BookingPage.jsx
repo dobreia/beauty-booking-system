@@ -1,10 +1,6 @@
-// React state és lifecycle hook-ok
 import { useEffect, useState } from "react";
-// HTTP kérésekhez Axios
 import axios from "axios";
-// URL query paraméterek kiolvasásához
 import { useSearchParams } from "react-router-dom";
-// Publikus foglalás oldal stílusa
 import "../styles/booking-public.css";
 
 export default function BookingPage() {
@@ -73,7 +69,7 @@ export default function BookingPage() {
       setForm({ service_id: "", employee_id: "", date: "" });
     } catch (err) {
       // Backend által küldött hibaüzenet, vagy általános hiba
-      setMessage(err.response?.data?.error || "Hiba történt!");
+      setMessage(err.response?.data?.error || "A foglalás nem sikerült. Kérjük próbálja meg újra.");
       setIsSuccess(false);
     }
   };
