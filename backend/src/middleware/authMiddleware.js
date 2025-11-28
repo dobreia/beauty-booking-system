@@ -3,32 +3,34 @@ import jwt from "jsonwebtoken";
 // Titkos kulcs a JWT token érvényesítéséhez
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
 
-// Middleware a hitelesítés biztosításához
+// Middleware a hitelesítéshez
 export function authRequired(req, res, next) {
     const authHeader = req.headers.authorization;
 
-    // Ellenőrizzük, hogy van-e Authorization fejléc
+    // Ha nincs Authorization fejléc, átirányítás a login oldalra
     if (!authHeader) {
-        return res.redirect('/login'); // Ha nincs token, irányítsuk át a bejelentkezési oldalra
+        return res.redirect('/login');
     }
 
-    // Kinyerjük a tokent az Authorization fejlécből
-    const token = authHeader.split(" ")[1]; // Feltételezzük, hogy 'Bearer <token>'
+    // Token kinyerése a fejlécből
+    const token = authHeader.split(" ")[1]; // Feltételezve a 'Bearer <token>' formátumot
 
-    // A token érvényesítése
+    // Token érvényesítése
     jwt.verify(token, JWT_SECRET, (err, user) => {
         if (err) {
-            return res.redirect('/login'); // Ha a token érvénytelen, irányítsuk át a bejelentkezési oldalra
+            // Ha érvénytelen a token, átirányítás a login oldalra
+            return res.redirect('/login');
         }
-        req.user = user; // A felhasználói adatokat hozzáadjuk a kérés objektumhoz
-        next();
+        req.user = user; // Felhasználó adatok hozzáadása a kéréshez
+        next(); // Tovább a következő middleware-hez
     });
 }
 
-// Middleware az admin jogosultságok biztosításához
+// Middleware admin jogosultsághoz
 export function adminRequired(req, res, next) {
     if (!req.user || req.user.role !== 'admin') {
+        // Ha nem admin, 403 hiba
         return res.status(403).json({ message: "Hozzáférés megtagadva. Csak adminisztrátorok számára elérhető." });
     }
-    next();
+    next(); // Tovább a következő middleware-hez
 }
