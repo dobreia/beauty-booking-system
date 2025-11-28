@@ -1,41 +1,34 @@
-// JWT tokenek kezelése a felhasználók azonosításához
 import jwt from "jsonwebtoken";
 
-// A token ellenőrzéshez szükséges titkos kulcs
-// Biztonságos környezetben a változó .env-ből érkezik
+// Secret key for JWT token verification
 const JWT_SECRET = process.env.JWT_SECRET || "dev_secret";
 
-// Middleware a hitelesítéshez
-// Csak olyan végpont hívható meg, ahol érvényes JWT token van megadva
+// Middleware to ensure authentication
 export function authRequired(req, res, next) {
     const authHeader = req.headers.authorization;
 
-    // Token hiánya vagy hibás formátuma esetén tiltás
-    if (!authHeader?.startsWith("Bearer ")) {
-        return res.status(401).json({ error: "Hiányzó token" });
+    // Check if there is an Authorization header
+    if (!authHeader) {
+        return res.redirect('/login'); // Redirect to login if no token is provided
     }
 
-    // Token kivágása a headerből
-    const token = authHeader.split(" ")[1];
+    // Extract the token from the Authorization header
+    const token = authHeader.split(" ")[1]; // Assuming 'Bearer <token>'
 
-    try {
-        // Token hitelességének és lejárati idejének ellenőrzése
-        const decoded = jwt.verify(token, JWT_SECRET);
-
-        // Felhasználói adatok elérhetővé tétele a következő middleware-ek számára
-        req.user = decoded;
+    // Verify the token
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) {
+            return res.redirect('/login'); // Redirect to login if the token is invalid
+        }
+        req.user = user; // Attach user info to request object
         next();
-    } catch (err) {
-        // Rossz vagy lejárt token esetén belépés megtagadása
-        res.status(401).json({ error: "Érvénytelen vagy lejárt token" });
-    }
+    });
 }
 
-// Middleware az admin jogosultság ellenőrzésére
-// Csak akkor enged tovább, ha a felhasználó szerepköre admin
-export function adminOnly(req, res, next) {
-    if (req.user?.role !== "admin") {
-        return res.status(403).json({ error: "Csak adminoknak" });
+// Middleware to ensure admin privileges
+export function adminRequired(req, res, next) {
+    if (!req.user || req.user.role !== 'admin') {
+        return res.status(403).json({ message: "Access denied. Admins only." });
     }
     next();
 }

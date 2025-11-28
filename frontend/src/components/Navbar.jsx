@@ -6,6 +6,7 @@ export default function Navbar({ user, setUser }) {
     const navigate = useNavigate(); // A navigate hook inicializálása navigáláshoz
     const location = useLocation(); // Az aktuális hely lekérése
     const isHome = location.pathname === "/"; // Ellenőrizzük, hogy a felhasználó a főoldalon van-e
+    const isAdminRoute = location.pathname.includes("/admin"); // Ellenőrizzük, hogy admin oldalon vagyunk-e
 
     // Kijelentkezés kezelése: töröljük a localStorage adatokat és a felhasználót
     const handleLogout = () => {
@@ -15,7 +16,7 @@ export default function Navbar({ user, setUser }) {
     };
 
     return (
-        <nav className={`navbar navbar-expand-lg ${isHome ? "navbar-transparent" : ""}`}> {/* Navbar, ha főoldalon vagyunk, átlátszó háttér */}
+        <nav className={`navbar navbar-expand-lg ${isHome ? "navbar-transparent" : ""} ${isAdminRoute ? "navbar-admin" : ""}`}> {/* Admin oldal esetén navbar-admin osztály */}
             <div className="container-lg d-flex align-items-center">
 
                 {/* Brand (szalon neve) */}
