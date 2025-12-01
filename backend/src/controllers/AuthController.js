@@ -38,7 +38,12 @@ export default class AuthController {
 
         } catch (err) {
             console.error("AUTH REGISTER ERROR:", err);
-            res.status(500).json({ error: "A regisztráció nem sikerült. Kérjük, próbálja meg újra." });
+
+            const status = err.status || 400;
+
+            return res.status(status).json({
+                error: err.message || "A regisztráció nem sikerült. Kérjük, próbálja meg újra."
+            });
         }
     }
 

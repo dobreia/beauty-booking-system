@@ -29,5 +29,4 @@ app.use("/api/admin", authRequired, adminRequired, (req, res) => {
     res.json({ message: "Admin hozzáférés engedélyezve!" });
 });
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`API running on http://localhost:${PORT}`));
+export default app;
