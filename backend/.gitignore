@@ -1,4 +1,13 @@
+# =========================
+# ENV (CRITICAL)
+# =========================
+.env
+.env.*
+!.env.example
+
+# =========================
 # Logs
+# =========================
 logs
 *.log
 npm-debug.log*
@@ -7,18 +16,72 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
+# =========================
+# Node / Frontend
+# =========================
+node_modules/
+dist/
+dist-ssr/
+build/
+coverage/
+
+# Vite / React local
 *.local
 
-# Editor directories and files
+# =========================
+# Java / Spring Boot
+# =========================
+target/
+*.jar
+*.war
+*.ear
+*.class
+
+# Maven
+.mvn/wrapper/maven-wrapper.jar
+
+# Gradle
+.gradle/
+build/
+
+# =========================
+# IDE / Editor
+# =========================
 .vscode/*
 !.vscode/extensions.json
-.idea
-.DS_Store
+.idea/
+*.iml
+
+# Windows
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
-*.sw?
+
+# Mac
+.DS_Store
+
+# =========================
+# OS / Misc
+# =========================
+Thumbs.db
+
+# =========================
+# Archives (IMPORTANT!)
+# =========================
+*.zip
+*.tar
+*.gz
+*.rar
+
+# =========================
+# Database (ha van local)
+# =========================
+*.sqlite
+*.db
+
+# =========================
+# Temporary files
+# =========================
+*.tmp
+*.temp
